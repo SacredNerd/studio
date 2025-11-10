@@ -17,17 +17,12 @@ import {
   MapPin,
   CalendarDays,
   DollarSign,
-  BarChart,
+  TrendingUp,
+  TrendingDown,
+  CircleDotDashed,
   Building2,
 } from "lucide-react";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { useState } from "react";
+import { JobStatusRibbon } from "./job-status-ribbon";
 
 interface JobCardProps {
   job: Job;
@@ -37,10 +32,27 @@ interface JobCardProps {
 }
 
 export function JobCard({ job, isSelected, onToggleSelection, onViewDetails }: JobCardProps) {
-  const [status, setStatus] = useState("new");
+  
+  const getMatchScoreIcon = () => {
+    if (job.profileMatchScore >= 90) {
+      return <TrendingUp className="h-4 w-4 text-green-500 flex-shrink-0" />;
+    }
+    if (job.profileMatchScore >= 75) {
+      return <CircleDotDashed className="h-4 w-4 text-yellow-500 flex-shrink-0" />;
+    }
+    return <TrendingDown className="h-4 w-4 text-red-500 flex-shrink-0" />;
+  };
+
+  const getMatchScoreColor = () => {
+    if (job.profileMatchScore >= 90) return "text-green-500";
+    if (job.profileMatchScore >= 75) return "text-yellow-500";
+    return "text-red-500";
+  };
+
 
   return (
-    <Card className="flex flex-col h-full transition-shadow duration-300 neobrutal-shadow neobrutal-shadow-hover">
+    <Card className="flex flex-col h-full transition-shadow duration-300 neobrutal-shadow neobrutal-shadow-hover relative overflow-hidden">
+      <JobStatusRibbon />
       <CardHeader className="flex-row items-start gap-4 space-y-0">
         <div className="flex items-center justify-center h-12 w-12 rounded-none border-2 bg-muted flex-shrink-0">
             <Building2 className="h-6 w-6 text-muted-foreground" />
@@ -71,8 +83,8 @@ export function JobCard({ job, isSelected, onToggleSelection, onViewDetails }: J
             <span className="truncate">{job.postedDate}</span>
           </div>
           <div className="flex items-center gap-2">
-            <BarChart className="h-4 w-4 text-primary flex-shrink-0" />
-            <span className="font-semibold text-foreground">{job.profileMatchScore}% Match</span>
+            {getMatchScoreIcon()}
+            <span className={`font-semibold ${getMatchScoreColor()}`}>{job.profileMatchScore}% Match</span>
           </div>
         </div>
         <Separator />
@@ -91,20 +103,6 @@ export function JobCard({ job, isSelected, onToggleSelection, onViewDetails }: J
         <Button variant="outline" className="w-full" onClick={onViewDetails}>
           View Details
         </Button>
-        <Select value={status} onValueChange={setStatus}>
-          <SelectTrigger className="h-9">
-            <SelectValue placeholder="Status" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="new">New</SelectItem>
-            <SelectItem value="APPLIED">APPLIED</SelectItem>
-            <SelectItem value="INTERVIEW">INTERVIEW</SelectItem>
-            <SelectItem value="PARTIALLY_CLEARED">PARTIALLY_CLEARED</SelectItem>
-            <SelectItem value="WAITING">WAITING</SelectItem>
-            <SelectItem value="OFFER">OFFER</SelectItem>
-            <SelectItem value="REJECTED">REJECTED</SelectItem>
-          </SelectContent>
-        </Select>
       </CardFooter>
     </Card>
   );

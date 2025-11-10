@@ -26,8 +26,8 @@ interface JobDetailsModalProps {
 
 export function JobDetailsModal({ job, onClose }: JobDetailsModalProps) {
   return (
-    <Dialog open={true} onOpenChange={onClose}>
-      <DialogContent className="w-full h-full max-w-full max-h-full flex flex-col p-0">
+    <Dialog open={true} onOpenChange={(open) => !open && onClose()}>
+      <DialogContent className="max-w-[70vw] max-h-[80vh] flex flex-col p-0">
         <DialogHeader className="p-6 pb-0">
           <div className="flex items-start gap-4">
             <div className="flex items-center justify-center h-16 w-16 rounded-none border-2 bg-muted flex-shrink-0">
