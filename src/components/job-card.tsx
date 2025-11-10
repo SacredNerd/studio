@@ -51,59 +51,61 @@ export function JobCard({ job, isSelected, onToggleSelection, onViewDetails }: J
 
 
   return (
-    <Card className="flex flex-col h-full transition-shadow duration-300 neobrutal-shadow neobrutal-shadow-hover relative">
+    <div className="relative h-full pt-8 pl-1">
       <JobStatusRibbon />
-      <CardHeader className="flex-row items-start gap-4 space-y-0 pt-8">
-        <div className="flex items-center justify-center h-12 w-12 rounded-none border-2 bg-muted flex-shrink-0">
-            <Building2 className="h-6 w-6 text-muted-foreground" />
-        </div>
-        <div className="flex-1">
-          <CardTitle className="text-lg font-headline">{job.title}</CardTitle>
-          <CardDescription>{job.companyName}</CardDescription>
-        </div>
-        <Checkbox
-          aria-label={`Select job: ${job.title}`}
-          checked={isSelected}
-          onCheckedChange={() => onToggleSelection(job.id)}
-          className="mt-1"
-        />
-      </CardHeader>
-      <CardContent className="flex-grow space-y-4">
-        <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm text-muted-foreground">
-          <div className="flex items-center gap-2">
-            <MapPin className="h-4 w-4 flex-shrink-0" />
-            <span className="truncate">{job.location}</span>
+      <Card className="flex flex-col h-full transition-shadow duration-300 neobrutal-shadow neobrutal-shadow-hover">
+        <CardHeader className="flex-row items-start gap-4 space-y-0">
+          <div className="flex items-center justify-center h-12 w-12 rounded-none border-2 bg-muted flex-shrink-0">
+              <Building2 className="h-6 w-6 text-muted-foreground" />
           </div>
-          <div className="flex items-center gap-2">
-            <DollarSign className="h-4 w-4 flex-shrink-0" />
-            <span className="truncate">{job.salary}</span>
+          <div className="flex-1">
+            <CardTitle className="text-lg font-headline">{job.title}</CardTitle>
+            <CardDescription>{job.companyName}</CardDescription>
           </div>
-          <div className="flex items-center gap-2">
-            <CalendarDays className="h-4 w-4 flex-shrink-0" />
-            <span className="truncate">{job.postedDate}</span>
+          <Checkbox
+            aria-label={`Select job: ${job.title}`}
+            checked={isSelected}
+            onCheckedChange={() => onToggleSelection(job.id)}
+            className="mt-1"
+          />
+        </CardHeader>
+        <CardContent className="flex-grow space-y-4">
+          <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm text-muted-foreground">
+            <div className="flex items-center gap-2">
+              <MapPin className="h-4 w-4 flex-shrink-0" />
+              <span className="truncate">{job.location}</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <DollarSign className="h-4 w-4 flex-shrink-0" />
+              <span className="truncate">{job.salary}</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <CalendarDays className="h-4 w-4 flex-shrink-0" />
+              <span className="truncate">{job.postedDate}</span>
+            </div>
+            <div className="flex items-center gap-2">
+              {getMatchScoreIcon()}
+              <span className={`font-semibold ${getMatchScoreColor()}`}>{job.profileMatchScore}% Match</span>
+            </div>
           </div>
-          <div className="flex items-center gap-2">
-            {getMatchScoreIcon()}
-            <span className={`font-semibold ${getMatchScoreColor()}`}>{job.profileMatchScore}% Match</span>
+          <Separator />
+          <div>
+            <h4 className="text-sm font-semibold mb-2 font-headline">Skills</h4>
+            <div className="flex flex-wrap gap-1">
+              {job.skills.map((skill) => (
+                <Badge key={skill} variant="secondary">
+                  {skill}
+                </Badge>
+              ))}
+            </div>
           </div>
-        </div>
-        <Separator />
-        <div>
-          <h4 className="text-sm font-semibold mb-2 font-headline">Skills</h4>
-          <div className="flex flex-wrap gap-1">
-            {job.skills.map((skill) => (
-              <Badge key={skill} variant="secondary">
-                {skill}
-              </Badge>
-            ))}
-          </div>
-        </div>
-      </CardContent>
-      <CardFooter className="flex-col items-stretch gap-2">
-        <Button variant="outline" className="w-full" onClick={onViewDetails}>
-          View Details
-        </Button>
-      </CardFooter>
-    </Card>
+        </CardContent>
+        <CardFooter className="flex-col items-stretch gap-2">
+          <Button variant="outline" className="w-full" onClick={onViewDetails}>
+            View Details
+          </Button>
+        </CardFooter>
+      </Card>
+    </div>
   );
 }

@@ -11,7 +11,7 @@ import {
 import { cn } from "@/lib/utils";
 
 const statusColors: { [key: string]: string } = {
-  new: "bg-gray-400",
+  new: "bg-blue-500",
   APPLIED: "bg-blue-500",
   INTERVIEW: "bg-yellow-500",
   PARTIALLY_CLEARED: "bg-orange-500",
@@ -24,18 +24,19 @@ export function JobStatusRibbon() {
   const [status, setStatus] = useState("new");
 
   return (
-    <div className="absolute top-0 left-0 w-40 h-10 z-10 overflow-hidden">
-      <div
-        className={cn(
-          "absolute top-[18px] left-[-42px] w-full transform -rotate-45 py-1 text-center text-white font-semibold text-xs shadow-md",
-          statusColors[status]
-        )}
-      >
+    <div
+      className={cn(
+        "absolute top-0 left-0 z-10 w-32 text-white text-xs font-bold",
+      )}
+    >
+      <div className={cn("relative w-full h-8 overflow-hidden", statusColors[status])}
+        style={{
+            clipPath: 'polygon(0 0, 100% 0, 85% 100%, 0% 100%)'
+        }}>
         <Select value={status} onValueChange={setStatus}>
-          <SelectTrigger 
-            className="w-auto h-auto p-0 m-0 border-0 bg-transparent text-white text-xs font-bold focus:ring-0 focus:ring-offset-0 [&>svg]:hidden"
-            style={{ minWidth: '80px', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}
-            >
+          <SelectTrigger
+            className="w-full h-full p-0 m-0 border-0 bg-transparent text-white text-xs font-bold focus:ring-0 focus:ring-offset-0 [&>svg]:ml-auto [&>svg]:mr-2"
+          >
             <SelectValue />
           </SelectTrigger>
           <SelectContent className="min-w-0">
@@ -49,6 +50,7 @@ export function JobStatusRibbon() {
           </SelectContent>
         </Select>
       </div>
+      <div className="absolute top-0 left-0 w-1 h-1 bg-blue-700" style={{transform: 'translateY(32px) translateX(0px)', zIndex: -1}} />
     </div>
   );
 }
