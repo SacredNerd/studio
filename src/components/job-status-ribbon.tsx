@@ -24,13 +24,13 @@ export function JobStatusRibbon() {
   const [status, setStatus] = useState("new");
 
   return (
-    <div className="absolute top-0 right-0 w-40 h-10 overflow-hidden rounded-tr-none">
+    <div className="absolute top-0 left-0 w-40 h-10 overflow-hidden rounded-tl-none">
       <div
         className={cn(
-          "absolute top-0 right-[-45px] w-full transform rotate-45 py-1 text-center text-white font-semibold text-sm shadow-md",
+          "absolute top-0 left-[-45px] w-full transform -rotate-45 py-1 text-center text-white font-semibold text-sm shadow-md",
           statusColors[status]
         )}
-        style={{ transformOrigin: 'top right' }}
+        style={{ transformOrigin: 'top left' }}
       >
         <Select value={status} onValueChange={setStatus}>
           <SelectTrigger className="w-auto h-6 p-1 border-0 bg-transparent text-white text-xs font-bold focus:ring-0 focus:ring-offset-0 [&>svg]:hidden">
