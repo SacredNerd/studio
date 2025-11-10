@@ -38,7 +38,7 @@ export default function Home({ searchParams }: PageProps) {
   return (
     <div className="min-h-screen bg-background">
       <Header />
-      <main className="container py-8">
+      <main className="container py-8 ml-4">
         <FilterBar />
         <JobListWrapper jobs={filteredJobs} />
       </main>

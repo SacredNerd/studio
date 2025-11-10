@@ -18,7 +18,7 @@ export function Header() {
   const userAvatar = PlaceHolderImages.find(p => p.id === 'user-avatar-1');
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+    <header className="sticky top-0 z-50 w-full border-b-2 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container flex h-16 items-center">
         <div className="mr-8 flex items-center">
           <Briefcase className="h-6 w-6 mr-2 text-primary" />
@@ -39,7 +39,7 @@ export function Header() {
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" className="relative h-9 w-9 rounded-full">
-                <Avatar className="h-9 w-9">
+                <Avatar className="h-9 w-9 border-2">
                   {userAvatar && (
                     <AvatarImage
                       src={userAvatar.imageUrl}
@@ -53,7 +53,7 @@ export function Header() {
                 </Avatar>
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent className="w-56" align="end" forceMount>
+            <DropdownMenuContent className="w-56 neobrutal-shadow-sm rounded-none border-2" align="end" forceMount>
               <DropdownMenuLabel className="font-normal">
                 <div className="flex flex-col space-y-1">
                   <p className="text-sm font-medium leading-none">John Doe</p>

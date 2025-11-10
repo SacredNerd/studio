@@ -7,4 +7,5 @@ export type Job = {
   salary: string;
   skills: string[];
   profileMatchScore: number;
+  description: string;
 };

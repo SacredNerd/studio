@@ -20,18 +20,29 @@ import {
   BarChart,
   Building2,
 } from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { useState } from "react";
 
 interface JobCardProps {
   job: Job;
   isSelected: boolean;
   onToggleSelection: (id: string) => void;
+  onViewDetails: () => void;
 }
 
-export function JobCard({ job, isSelected, onToggleSelection }: JobCardProps) {
+export function JobCard({ job, isSelected, onToggleSelection, onViewDetails }: JobCardProps) {
+  const [status, setStatus] = useState("new");
+
   return (
-    <Card className="flex flex-col h-full transition-shadow duration-300 hover:shadow-xl">
+    <Card className="flex flex-col h-full transition-shadow duration-300 neobrutal-shadow neobrutal-shadow-hover">
       <CardHeader className="flex-row items-start gap-4 space-y-0">
-        <div className="flex items-center justify-center h-12 w-12 rounded-lg bg-muted flex-shrink-0">
+        <div className="flex items-center justify-center h-12 w-12 rounded-none border-2 bg-muted flex-shrink-0">
             <Building2 className="h-6 w-6 text-muted-foreground" />
         </div>
         <div className="flex-1">
@@ -76,10 +87,24 @@ export function JobCard({ job, isSelected, onToggleSelection }: JobCardProps) {
           </div>
         </div>
       </CardContent>
-      <CardFooter>
-        <Button variant="outline" className="w-full">
+      <CardFooter className="flex-col items-stretch gap-2">
+        <Button variant="outline" className="w-full" onClick={onViewDetails}>
           View Details
         </Button>
+        <Select value={status} onValueChange={setStatus}>
+          <SelectTrigger className="h-9">
+            <SelectValue placeholder="Status" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="new">New</SelectItem>
+            <SelectItem value="APPLIED">APPLIED</SelectItem>
+            <SelectItem value="INTERVIEW">INTERVIEW</SelectItem>
+            <SelectItem value="PARTIALLY_CLEARED">PARTIALLY_CLEARED</SelectItem>
+            <SelectItem value="WAITING">WAITING</SelectItem>
+            <SelectItem value="OFFER">OFFER</SelectItem>
+            <SelectItem value="REJECTED">REJECTED</SelectItem>
+          </SelectContent>
+        </Select>
       </CardFooter>
     </Card>
   );

@@ -77,7 +77,7 @@ export function FilterBar() {
   };
 
   return (
-    <div className="p-4 mb-8 bg-card rounded-xl border shadow-sm">
+    <div className="p-4 mb-8 bg-card rounded-none border-2 neobrutal-shadow">
       <form onSubmit={handleApplyFilters} className="space-y-4">
         <div className="flex flex-col md:flex-row items-center gap-2">
           <div className="relative w-full flex-grow">
