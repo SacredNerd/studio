@@ -11,7 +11,7 @@ import {
 import { cn } from "@/lib/utils";
 
 const statusColors: { [key: string]: string } = {
-  new: "bg-blue-500",
+  new: "bg-gray-500",
   APPLIED: "bg-blue-500",
   INTERVIEW: "bg-yellow-500",
   PARTIALLY_CLEARED: "bg-orange-500",
@@ -35,7 +35,7 @@ export function JobStatusRibbon() {
         }}>
         <Select value={status} onValueChange={setStatus}>
           <SelectTrigger
-            className="w-full h-full p-0 m-0 border-0 bg-transparent text-white text-xs font-bold focus:ring-0 focus:ring-offset-0 [&>svg]:ml-auto [&>svg]:mr-2"
+            className="w-full h-full p-0 m-0 border-0 bg-transparent text-white text-xs font-bold focus:ring-0 focus:ring-offset-0 [&>svg]:ml-auto [&>svg]:mr-2 pl-2"
           >
             <SelectValue />
           </SelectTrigger>
