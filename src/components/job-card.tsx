@@ -51,7 +51,7 @@ export function JobCard({ job, isSelected, onToggleSelection, onViewDetails }: J
 
 
   return (
-    <Card className="flex flex-col h-full transition-shadow duration-300 neobrutal-shadow neobrutal-shadow-hover relative overflow-hidden">
+    <Card className="flex flex-col h-full transition-shadow duration-300 neobrutal-shadow neobrutal-shadow-hover relative">
       <JobStatusRibbon />
       <CardHeader className="flex-row items-start gap-4 space-y-0 pt-8">
         <div className="flex items-center justify-center h-12 w-12 rounded-none border-2 bg-muted flex-shrink-0">
