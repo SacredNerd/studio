@@ -8,7 +8,7 @@ export default async function SettingsPage() {
   const settings = await getSettings();
 
   return (
-    <div className="space-y-12 px-4">
+    <div className="space-y-12 px-4 md:px-0">
       <h1 className="text-4xl font-bold font-headline">Settings</h1>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">

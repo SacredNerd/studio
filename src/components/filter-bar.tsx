@@ -131,7 +131,7 @@ export function FilterBar() {
             </Button>
           </div>
         </div>
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
           <Select name="jobType" value={jobType} onValueChange={setJobType}>
             <SelectTrigger><SelectValue placeholder="Job Type" /></SelectTrigger>
             <SelectContent>

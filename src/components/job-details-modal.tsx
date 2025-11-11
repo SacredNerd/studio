@@ -29,6 +29,7 @@ import { cn } from "@/lib/utils";
 import { useState } from "react";
 import { format } from "date-fns";
 import { useToast } from "@/hooks/use-toast";
+import { ScrollArea } from "./ui/scroll-area";
 
 
 interface JobDetailsModalProps {
@@ -50,7 +51,7 @@ export function JobDetailsModal({ job, onClose }: JobDetailsModalProps) {
 
   return (
     <Dialog open={true} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="max-w-[70vw] max-h-[80vh] flex flex-col p-0">
+      <DialogContent className="max-w-[90vw] md:max-w-[70vw] max-h-[85vh] flex flex-col p-0">
         <DialogHeader className="p-6 pb-0">
           <div className="flex items-start gap-4">
             <div className="flex items-center justify-center h-16 w-16 rounded-none border-2 bg-muted flex-shrink-0">
@@ -62,10 +63,10 @@ export function JobDetailsModal({ job, onClose }: JobDetailsModalProps) {
             </div>
           </div>
         </DialogHeader>
-        <div className="flex-grow overflow-y-auto px-6 space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
+        <ScrollArea className="flex-grow">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6 px-6 pb-6">
             <div className="space-y-6">
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-4 text-md text-muted-foreground">
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 text-md text-muted-foreground">
                 <div className="flex items-center gap-2">
                   <MapPin className="h-5 w-5 flex-shrink-0" />
                   <span>{job.location}</span>
@@ -155,7 +156,7 @@ export function JobDetailsModal({ job, onClose }: JobDetailsModalProps) {
                 </div>
             </div>
           </div>
-        </div>
+        </ScrollArea>
         <DialogFooter className="p-6 border-t-2 bg-background sticky bottom-0">
           <Button variant="outline" onClick={onClose}>Cancel</Button>
           <Button onClick={handleSave}>Save</Button>
