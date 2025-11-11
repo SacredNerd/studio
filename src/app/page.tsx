@@ -1,4 +1,3 @@
-import { Header } from "@/components/header";
 import { FilterBar } from "@/components/filter-bar";
 import { JobListWrapper } from "@/components/job-list-wrapper";
 import { jobs as allJobs } from "@/lib/data";
@@ -36,12 +35,9 @@ export default function Home({ searchParams }: PageProps) {
   });
 
   return (
-    <div className="min-h-screen bg-background">
-      <Header />
-      <main className="container py-8 ml-4">
-        <FilterBar />
-        <JobListWrapper jobs={filteredJobs} />
-      </main>
-    </div>
+    <>
+      <FilterBar />
+      <JobListWrapper jobs={filteredJobs} />
+    </>
   );
 }
