@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -18,9 +19,59 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Separator } from "@/components/ui/separator";
+import { Progress } from "@/components/ui/progress";
+import { FileUp, X } from "lucide-react";
+
+type AiSource = {
+  id: number;
+  provider: string;
+  apiKey: string;
+};
 
 export function SourcesForm() {
+  const [credentialFile, setCredentialFile] = useState<File | null>(null);
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [isUploading, setIsUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const [aiSources, setAiSources] = useState<AiSource[]>([
+    { id: 1, provider: "groq", apiKey: "" },
+  ]);
+
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file && file.type === "application/json") {
+      setCredentialFile(file);
+      handleUpload(file);
+    } else {
+      alert("Please select a valid JSON file.");
+    }
+  };
+
+  const handleUpload = (file: File) => {
+    setIsUploading(true);
+    setUploadProgress(0);
+    const interval = setInterval(() => {
+      setUploadProgress((prev) => {
+        if (prev >= 100) {
+          clearInterval(interval);
+          setIsUploading(false);
+          return 100;
+        }
+        return prev + 10;
+      });
+    }, 200);
+  };
+
+  const handleAddMore = () => {
+    setAiSources([...aiSources, { id: Date.now(), provider: 'gemini', apiKey: '' }]);
+  };
+
+  const handleRemoveSource = (id: number) => {
+    setAiSources(aiSources.filter(source => source.id !== id));
+  };
+
+
   return (
     <Card className="neobrutal-shadow">
       <CardHeader>
@@ -33,41 +84,72 @@ export function SourcesForm() {
         {/* Gmail */}
         <div className="space-y-4 p-4 border-2 rounded-none">
           <h3 className="font-semibold font-headline">Gmail</h3>
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-            <div className="text-sm text-muted-foreground truncate">
-                <span>credentials.json</span>
+          <input
+            type="file"
+            ref={fileInputRef}
+            onChange={handleFileChange}
+            className="hidden"
+            accept=".json"
+          />
+          {!credentialFile ? (
+            <Button
+              variant="outline"
+              className="w-full"
+              onClick={() => fileInputRef.current?.click()}
+            >
+              <FileUp className="mr-2 h-4 w-4" />
+              Upload credentials.json
+            </Button>
+          ) : (
+            <div className="space-y-2">
+              <div className="flex items-center justify-between text-sm">
+                <span className="truncate">{credentialFile.name}</span>
+                <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => setCredentialFile(null)}>
+                    <X className="h-4 w-4" />
+                </Button>
+              </div>
+              <Progress value={uploadProgress} className="h-2" />
             </div>
-            <Button variant="outline" size="sm">Upload</Button>
-          </div>
+          )}
         </div>
 
         {/* AI */}
         <div className="space-y-4 p-4 border-2 rounded-none">
-          <h3 className="font-semibold font-headline">AI</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="ai-provider">Provider</Label>
-              <Select defaultValue="groq">
-                <SelectTrigger id="ai-provider">
-                  <SelectValue placeholder="Select provider" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="groq">Groq</SelectItem>
-                  <SelectItem value="openai">OpenAI</SelectItem>
-                  <SelectItem value="gemini">Google Gemini</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="api-key">API Key</Label>
-              <Input id="api-key" type="password" placeholder="••••••••••••••••" />
-            </div>
-          </div>
-          <div className="flex justify-end">
-            <Button variant="outline" size="sm">
+          <div className="flex justify-between items-center">
+            <h3 className="font-semibold font-headline">AI</h3>
+            <Button variant="outline" size="sm" onClick={handleAddMore}>
               Add more
             </Button>
           </div>
+
+          {aiSources.map((source, index) => (
+            <div key={source.id} className="grid grid-cols-1 md:grid-cols-2 gap-4 items-end">
+              <div className="space-y-2">
+                <Label htmlFor={`ai-provider-${source.id}`}>Provider</Label>
+                <Select defaultValue={source.provider}>
+                  <SelectTrigger id={`ai-provider-${source.id}`}>
+                    <SelectValue placeholder="Select provider" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="groq">Groq</SelectItem>
+                    <SelectItem value="openai">OpenAI</SelectItem>
+                    <SelectItem value="gemini">Google Gemini</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="flex gap-2">
+                <div className="space-y-2 w-full">
+                  <Label htmlFor={`api-key-${source.id}`}>API Key</Label>
+                  <Input id={`api-key-${source.id}`} type="password" placeholder="••••••••••••••••" />
+                </div>
+                {aiSources.length > 1 && (
+                    <Button variant="ghost" size="icon" className="h-10 w-10 self-end" onClick={() => handleRemoveSource(source.id)}>
+                        <X className="h-4 w-4" />
+                    </Button>
+                )}
+              </div>
+            </div>
+          ))}
         </div>
 
         {/* LinkedIn */}
