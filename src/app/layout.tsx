@@ -28,7 +28,7 @@ export default async function RootLayout({
         <div className="flex flex-col min-h-screen">
           <SetupLayout setupComplete={setupComplete}>
             {setupComplete && <Header />}
-            <main className="container flex-grow py-8">
+            <main className="container mx-auto flex-grow py-8">
               {children}
             </main>
           </SetupLayout>
