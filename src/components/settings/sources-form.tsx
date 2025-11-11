@@ -172,10 +172,10 @@ export function SourcesForm() {
 
           {/* LinkedIn */}
           <div className="space-y-4 p-4 border-2 rounded-none">
-            <h3 className="font-semibold font-headline">LinkedIn</h3>
+            <h3 className="font-semibold font-headline">LinkedIn (Optional)</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="linkedin-client-id">Client ID (Optional)</Label>
+                <Label htmlFor="linkedin-client-id">Client ID</Label>
                 <Input id="linkedin-client-id" />
               </div>
               <div className="space-y-2">
