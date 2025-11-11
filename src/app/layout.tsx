@@ -25,13 +25,15 @@ export default async function RootLayout({
         <link href="https://fonts.googleapis.com/css2?family=Inter&display=swap" rel="stylesheet" />
       </head>
       <body className="font-body antialiased bg-background">
-        <SetupLayout setupComplete={setupComplete}>
-          {setupComplete && <Header />}
-          <main className="container py-8">
-            {children}
-          </main>
-        </SetupLayout>
-        <Toaster />
+        <div className="flex flex-col min-h-screen">
+          <SetupLayout setupComplete={setupComplete}>
+            {setupComplete && <Header />}
+            <main className="container flex-grow py-8">
+              {children}
+            </main>
+          </SetupLayout>
+          <Toaster />
+        </div>
       </body>
     </html>
   );
