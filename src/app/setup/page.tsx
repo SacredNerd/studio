@@ -61,12 +61,12 @@ export default function SetupPage() {
     function onSubmit(data: SetupFormValues) {
         // In a real app, you'd save this data to your backend.
         // For now, we'll just save a flag to local storage.
-        localStorage.setItem('joblytics-setup-complete', 'true');
-        localStorage.setItem('joblytics-user-profile', JSON.stringify(data));
+        localStorage.setItem('job.hunt-setup-complete', 'true');
+        localStorage.setItem('job.hunt-user-profile', JSON.stringify(data));
 
         toast({
             title: "Profile Created!",
-            description: "Welcome to Joblytics. Redirecting you now...",
+            description: "Welcome to Job.Hunt. Redirecting you now...",
         });
         setTimeout(() => router.push('/'), 1500);
     }
@@ -80,7 +80,7 @@ export default function SetupPage() {
                         <div className="mx-auto mb-4 flex items-center justify-center">
                            <Briefcase className="h-8 w-8 mr-2 text-primary" />
                         </div>
-                        <CardTitle className="font-headline text-3xl">Welcome to Joblytics</CardTitle>
+                        <CardTitle className="font-headline text-3xl">Welcome to Job.Hunt</CardTitle>
                         <CardDescription>
                             Let's get your profile set up.
                         </CardDescription>

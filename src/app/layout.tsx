@@ -5,7 +5,7 @@ import { Header } from '@/components/header';
 import { SetupLayout } from '@/components/setup-layout';
 
 export const metadata: Metadata = {
-  title: 'Joblytics',
+  title: 'Job.Hunt',
   description: 'AI-Powered Job Search Platform',
 };
 

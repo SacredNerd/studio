@@ -10,7 +10,7 @@ export default function Home() {
   const searchParams = useSearchParams();
   
   // This is a placeholder for a real check
-  const isSetupComplete = typeof window !== 'undefined' && localStorage.getItem('joblytics-setup-complete');
+  const isSetupComplete = typeof window !== 'undefined' && localStorage.getItem('job.hunt-setup-complete');
 
   useEffect(() => {
     if (!isSetupComplete) {

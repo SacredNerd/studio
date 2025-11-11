@@ -23,7 +23,7 @@ export function Header() {
         <div className="mr-8 flex items-center">
           <Briefcase className="h-6 w-6 mr-2 text-primary" />
           <Link href="/" className="font-bold text-lg text-foreground font-headline">
-            Joblytics
+            Job.Hunt
           </Link>
         </div>
         <nav className="flex items-center space-x-6 text-sm font-medium">
