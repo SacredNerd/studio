@@ -1,25 +1,28 @@
+"use client";
+import { useEffect } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { FilterBar } from "@/components/filter-bar";
 import { JobListWrapper } from "@/components/job-list-wrapper";
 import { jobs as allJobs } from "@/lib/data";
 
-interface PageProps {
-  searchParams: {
-    q?: string;
-    jobType?: string;
-    location?: string;
-    salary?: string;
-    date?: string;
-    status?: string;
-  };
-}
-
-export default function Home({ searchParams }: PageProps) {
+export default function Home() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
   
+  // This is a placeholder for a real check
+  const isSetupComplete = typeof window !== 'undefined' && localStorage.getItem('joblytics-setup-complete');
+
+  useEffect(() => {
+    if (!isSetupComplete) {
+      router.replace('/setup');
+    }
+  }, [isSetupComplete, router]);
+
   const filteredJobs = allJobs.filter(job => {
-    const query = searchParams.q?.toLowerCase() || '';
-    const jobType = searchParams.jobType;
-    const location = searchParams.location;
-    const status = searchParams.status;
+    const query = searchParams.get('q')?.toLowerCase() || '';
+    const jobType = searchParams.get('jobType');
+    const location = searchParams.get('location');
+    const status = searchParams.get('status');
 
     const matchesQuery = query ? 
       job.title.toLowerCase().includes(query) || 
@@ -37,6 +40,15 @@ export default function Home({ searchParams }: PageProps) {
 
     return matchesQuery && matchesJobType && matchesLocation && matchesStatus;
   });
+
+  if (!isSetupComplete) {
+    // You can return a loader here while the redirect happens
+    return (
+        <div className="flex items-center justify-center h-screen">
+            <p>Loading...</p>
+        </div>
+    );
+  }
 
   return (
     <>
