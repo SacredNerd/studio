@@ -1,19 +1,21 @@
 import type { Metadata } from 'next';
 import './globals.css';
 import { Toaster } from "@/components/ui/toaster";
-import { Header } from '@/components/header';
 import { SetupLayout } from '@/components/setup-layout';
+import { isSetupComplete } from './actions';
 
 export const metadata: Metadata = {
   title: 'Job.Hunt',
   description: 'AI-Powered Job Search Platform',
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const setupComplete = await isSetupComplete();
+
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
@@ -22,7 +24,7 @@ export default function RootLayout({
         <link href="https://fonts.googleapis.com/css2?family=Inter&display=swap" rel="stylesheet" />
       </head>
       <body className="font-body antialiased bg-background">
-        <SetupLayout>
+        <SetupLayout setupComplete={setupComplete}>
           {children}
         </SetupLayout>
         <Toaster />

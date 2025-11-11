@@ -1,7 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
-import { useForm } from "react-hook-form";
+import { useState, useRef, useTransition } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -21,8 +20,10 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Progress } from "@/components/ui/progress";
-import { FileUp, X } from "lucide-react";
+import { FileUp, Loader2, X } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { saveSettings } from "@/app/actions";
+import { useRouter } from "next/navigation";
 
 type AiSource = {
   id: number;
@@ -30,18 +31,23 @@ type AiSource = {
   apiKey: string;
 };
 
-export function SourcesForm() {
-  const { toast } = useToast();
-  const { handleSubmit } = useForm();
+interface SourcesFormProps {
+    settings: any;
+}
 
-  const [credentialFile, setCredentialFile] = useState<File | null>(null);
-  const [uploadProgress, setUploadProgress] = useState(0);
+export function SourcesForm({ settings }: SourcesFormProps) {
+  const { toast } = useToast();
+  const router = useRouter();
+  const [isPending, startTransition] = useTransition();
+
+  const [credentialFile, setCredentialFile] = useState<File | null>(settings?.gmail?.fileName ? new File([], settings.gmail.fileName) : null);
+  const [uploadProgress, setUploadProgress] = useState(settings?.gmail?.fileName ? 100 : 0);
   const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const [aiSources, setAiSources] = useState<AiSource[]>([
-    { id: 1, provider: "groq", apiKey: "" },
-  ]);
+  const [aiSources, setAiSources] = useState<AiSource[]>(
+    settings?.aiSources || [{ id: 1, provider: "groq", apiKey: "" }]
+  );
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -80,16 +86,51 @@ export function SourcesForm() {
     setAiSources(aiSources.filter(source => source.id !== id));
   };
   
-  const onSubmit = () => {
-    toast({
-        title: "Sources Saved",
-        description: "Your source configurations have been successfully saved.",
+  const handleAiSourceChange = (id: number, field: 'provider' | 'apiKey', value: string) => {
+    setAiSources(aiSources.map(source => source.id === id ? { ...source, [field]: value } : source));
+  }
+
+  const handleLinkedinChange = (field: 'clientId' | 'clientSecret', value: string) => {
+    // This is just a placeholder for now. 
+    // In a real app you'd update state that is part of the form submission
+  }
+
+  const onSubmit = (event: React.FormEvent) => {
+    event.preventDefault();
+    startTransition(async () => {
+        const settingsToSave = {
+            gmail: {
+                fileName: credentialFile?.name
+            },
+            aiSources,
+            linkedin: {
+                // In a real app, you would get these values from state.
+                clientId: (document.getElementById('linkedin-client-id') as HTMLInputElement).value,
+                clientSecret: (document.getElementById('linkedin-client-secret') as HTMLInputElement).value,
+            }
+        };
+
+        const result = await saveSettings(settingsToSave);
+
+        if (result.success) {
+            toast({
+                title: "Sources Saved",
+                description: "Your source configurations have been successfully saved.",
+            });
+            router.refresh();
+        } else {
+            toast({
+                variant: "destructive",
+                title: "Uh oh! Something went wrong.",
+                description: result.error || "Could not save settings.",
+            });
+        }
     });
   };
 
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)}>
+    <form onSubmit={onSubmit}>
       <Card className="neobrutal-shadow">
         <CardHeader>
           <CardTitle className="font-headline">Sources</CardTitle>
@@ -122,11 +163,11 @@ export function SourcesForm() {
               <div className="space-y-2">
                 <div className="flex items-center justify-between text-sm">
                   <span className="truncate">{credentialFile.name}</span>
-                  <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => setCredentialFile(null)}>
+                  <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => { setCredentialFile(null); setUploadProgress(0); }}>
                       <X className="h-4 w-4" />
                   </Button>
                 </div>
-                {isUploading && <Progress value={uploadProgress} className="h-2" />}
+                {(isUploading || uploadProgress > 0) && <Progress value={uploadProgress} className="h-2" />}
               </div>
             )}
           </div>
@@ -144,7 +185,10 @@ export function SourcesForm() {
               <div key={source.id} className="grid grid-cols-1 md:grid-cols-2 gap-4 items-end">
                 <div className="space-y-2">
                   <Label htmlFor={`ai-provider-${source.id}`}>Provider</Label>
-                  <Select defaultValue={source.provider}>
+                  <Select 
+                    value={source.provider} 
+                    onValueChange={(value) => handleAiSourceChange(source.id, 'provider', value)}
+                  >
                     <SelectTrigger id={`ai-provider-${source.id}`}>
                       <SelectValue placeholder="Select provider" />
                     </SelectTrigger>
@@ -158,7 +202,13 @@ export function SourcesForm() {
                 <div className="flex gap-2">
                   <div className="space-y-2 w-full">
                     <Label htmlFor={`api-key-${source.id}`}>API Key</Label>
-                    <Input id={`api-key-${source.id}`} type="password" placeholder="••••••••••••••••" />
+                    <Input 
+                      id={`api-key-${source.id}`} 
+                      type="password" 
+                      placeholder="••••••••••••••••" 
+                      value={source.apiKey}
+                      onChange={(e) => handleAiSourceChange(source.id, 'apiKey', e.target.value)}
+                    />
                   </div>
                   {aiSources.length > 1 && (
                       <Button type="button" variant="ghost" size="icon" className="h-10 w-10 self-end" onClick={() => handleRemoveSource(source.id)}>
@@ -176,17 +226,20 @@ export function SourcesForm() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="linkedin-client-id">Client ID</Label>
-                <Input id="linkedin-client-id" />
+                <Input id="linkedin-client-id" defaultValue={settings?.linkedin?.clientId} />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="linkedin-client-secret">Client Secret</Label>
-                <Input id="linkedin-client-secret" type="password" />
+                <Input id="linkedin-client-secret" type="password" defaultValue={settings?.linkedin?.clientSecret} />
               </div>
             </div>
           </div>
         </CardContent>
         <CardFooter className="justify-end">
-          <Button type="submit">Save Sources</Button>
+            <Button type="submit" disabled={isPending}>
+                {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                Save Sources
+            </Button>
         </CardFooter>
       </Card>
     </form>

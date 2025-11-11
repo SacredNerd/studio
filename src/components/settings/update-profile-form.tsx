@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useRef, useState, useTransition } from "react";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -15,10 +15,12 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { PlaceHolderImages } from "@/lib/placeholder-images";
 import { useToast } from "@/hooks/use-toast";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import type { User } from "@/lib/types";
+import { updateUser } from "@/app/actions";
+import { Loader2 } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 const profileFormSchema = z.object({
     firstName: z.string().min(1, "First name is required"),
@@ -28,18 +30,23 @@ const profileFormSchema = z.object({
 
 type ProfileFormValues = z.infer<typeof profileFormSchema>;
 
-export function UpdateProfileForm() {
+interface UpdateProfileFormProps {
+    user: User | null;
+}
+
+export function UpdateProfileForm({ user }: UpdateProfileFormProps) {
     const { toast } = useToast();
-    const userAvatar = PlaceHolderImages.find(p => p.id === 'user-avatar-1');
-    const [avatarPreview, setAvatarPreview] = useState(userAvatar?.imageUrl || '');
+    const router = useRouter();
+    const [avatarPreview, setAvatarPreview] = useState(user?.avatar || '');
     const fileInputRef = useRef<HTMLInputElement>(null);
+    const [isPending, startTransition] = useTransition();
 
     const form = useForm<ProfileFormValues>({
         resolver: zodResolver(profileFormSchema),
         defaultValues: {
-            firstName: "John",
-            lastName: "Doe",
-            email: "john.doe@example.com",
+            firstName: user?.firstName || "",
+            lastName: user?.lastName || "",
+            email: user?.email || "",
         },
     });
 
@@ -59,9 +66,25 @@ export function UpdateProfileForm() {
     }
 
     function onSubmit(data: ProfileFormValues) {
-        toast({
-            title: "Profile Updated",
-            description: "Your profile information has been successfully updated.",
+        startTransition(async () => {
+            const result = await updateUser({
+                ...data,
+                avatar: avatarPreview
+            });
+
+            if (result.success) {
+                toast({
+                    title: "Profile Updated",
+                    description: "Your profile information has been successfully updated.",
+                });
+                router.refresh();
+            } else {
+                 toast({
+                    variant: "destructive",
+                    title: "Uh oh! Something went wrong.",
+                    description: result.error || "Could not update profile.",
+                });
+            }
         });
     }
 
@@ -79,13 +102,13 @@ export function UpdateProfileForm() {
                     <div className="flex items-center gap-6">
                     <Avatar className="h-20 w-20 border-2">
                         <AvatarImage
-                        src={avatarPreview}
+                        src={avatarPreview || undefined}
                         alt="User profile"
                         width={80}
                         height={80}
                         data-ai-hint="person portrait"
                         />
-                        <AvatarFallback>JD</AvatarFallback>
+                        <AvatarFallback>{user?.firstName?.[0]}{user?.lastName?.[0]}</AvatarFallback>
                     </Avatar>
                     <div className="flex flex-col gap-2">
                         <Button type="button" variant="outline" onClick={handleUploadClick}>Change Photo</Button>
@@ -143,7 +166,10 @@ export function UpdateProfileForm() {
                     />
                 </CardContent>
                 <CardFooter className="justify-end">
-                    <Button type="submit">Update Profile</Button>
+                    <Button type="submit" disabled={isPending}>
+                        {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                        Update Profile
+                    </Button>
                 </CardFooter>
             </Card>
         </form>

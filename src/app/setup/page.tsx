@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useRef, useState, useTransition } from "react";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -18,7 +18,8 @@ import {
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { Briefcase } from "lucide-react";
+import { Briefcase, Loader2 } from "lucide-react";
+import { saveUser } from "@/app/actions";
 
 const setupFormSchema = z.object({
     firstName: z.string().min(1, "First name is required"),
@@ -33,6 +34,7 @@ export default function SetupPage() {
     const router = useRouter();
     const [avatarPreview, setAvatarPreview] = useState<string>('');
     const fileInputRef = useRef<HTMLInputElement>(null);
+    const [isPending, startTransition] = useTransition();
 
     const form = useForm<SetupFormValues>({
         resolver: zodResolver(setupFormSchema),
@@ -59,16 +61,26 @@ export default function SetupPage() {
     }
 
     function onSubmit(data: SetupFormValues) {
-        // In a real app, you'd save this data to your backend.
-        // For now, we'll just save a flag to local storage.
-        localStorage.setItem('job.hunt-setup-complete', 'true');
-        localStorage.setItem('job.hunt-user-profile', JSON.stringify(data));
+        startTransition(async () => {
+            const result = await saveUser({
+                ...data,
+                avatar: avatarPreview
+            });
 
-        toast({
-            title: "Profile Created!",
-            description: "Welcome to Job.Hunt. Redirecting you now...",
+            if (result.success) {
+                toast({
+                    title: "Profile Created!",
+                    description: "Welcome to Job.Hunt. Redirecting you now...",
+                });
+                router.push('/');
+            } else {
+                toast({
+                    variant: "destructive",
+                    title: "Uh oh! Something went wrong.",
+                    description: result.error || "Could not create profile.",
+                });
+            }
         });
-        setTimeout(() => router.push('/'), 1500);
     }
 
   return (
@@ -152,7 +164,10 @@ export default function SetupPage() {
                         />
                     </CardContent>
                     <CardFooter>
-                        <Button type="submit" className="w-full">Save and Continue</Button>
+                        <Button type="submit" className="w-full" disabled={isPending}>
+                            {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                            Save and Continue
+                        </Button>
                     </CardFooter>
                 </Card>
             </form>

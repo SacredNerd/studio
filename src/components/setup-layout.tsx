@@ -3,11 +3,11 @@
 import { usePathname } from "next/navigation";
 import { Header } from "./header";
 
-export function SetupLayout({ children }: { children: React.ReactNode }) {
+export function SetupLayout({ children, setupComplete }: { children: React.ReactNode, setupComplete: boolean }) {
   const pathname = usePathname();
   const isSetupPage = pathname === "/setup";
 
-  if (isSetupPage) {
+  if (isSetupPage || !setupComplete) {
     return <>{children}</>;
   }
 

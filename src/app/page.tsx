@@ -1,22 +1,24 @@
 "use client";
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { FilterBar } from "@/components/filter-bar";
 import { JobListWrapper } from "@/components/job-list-wrapper";
 import { jobs as allJobs } from "@/lib/data";
+import { isSetupComplete as checkSetupComplete } from './actions';
 
 export default function Home() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  
-  // This is a placeholder for a real check
-  const isSetupComplete = typeof window !== 'undefined' && localStorage.getItem('job.hunt-setup-complete');
+  const [isSetupComplete, setIsSetupComplete] = useState<boolean | null>(null);
 
   useEffect(() => {
-    if (!isSetupComplete) {
-      router.replace('/setup');
-    }
-  }, [isSetupComplete, router]);
+    checkSetupComplete().then(complete => {
+      setIsSetupComplete(complete);
+      if (!complete) {
+        router.replace('/setup');
+      }
+    });
+  }, [router]);
 
   const filteredJobs = allJobs.filter(job => {
     const query = searchParams.get('q')?.toLowerCase() || '';
@@ -41,8 +43,7 @@ export default function Home() {
     return matchesQuery && matchesJobType && matchesLocation && matchesStatus;
   });
 
-  if (!isSetupComplete) {
-    // You can return a loader here while the redirect happens
+  if (isSetupComplete === null || !isSetupComplete) {
     return (
         <div className="flex items-center justify-center h-screen">
             <p>Loading...</p>
