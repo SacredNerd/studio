@@ -9,6 +9,7 @@ interface PageProps {
     location?: string;
     salary?: string;
     date?: string;
+    status?: string;
   };
 }
 
@@ -18,6 +19,7 @@ export default function Home({ searchParams }: PageProps) {
     const query = searchParams.q?.toLowerCase() || '';
     const jobType = searchParams.jobType;
     const location = searchParams.location;
+    const status = searchParams.status;
 
     const matchesQuery = query ? 
       job.title.toLowerCase().includes(query) || 
@@ -31,7 +33,9 @@ export default function Home({ searchParams }: PageProps) {
       
     const matchesLocation = location && location !== 'all' ? job.location === location : true;
 
-    return matchesQuery && matchesJobType && matchesLocation;
+    const matchesStatus = status && status !== 'all' ? job.status === status : true;
+
+    return matchesQuery && matchesJobType && matchesLocation && matchesStatus;
   });
 
   return (

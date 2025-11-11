@@ -29,6 +29,8 @@ export function FilterBar() {
   const [location, setLocation] = useState(searchParams.get("location") || "all");
   const [salary, setSalary] = useState(searchParams.get("salary") || "all");
   const [date, setDate] = useState(searchParams.get("date") || "all");
+  const [status, setStatus] = useState(searchParams.get("status") || "all");
+
 
   const [isPending, startTransition] = useTransition();
   const [aiResult, setAiResult] = useState<RefineSearchOutput | null>(null);
@@ -43,6 +45,7 @@ export function FilterBar() {
     if (location !== 'all') newParams.set("location", location);
     if (salary !== 'all') newParams.set("salary", salary);
     if (date !== 'all') newParams.set("date", date);
+    if (status !== 'all') newParams.set("status", status);
     
     router.push(`${pathname}?${newParams.toString()}`);
   };
@@ -128,7 +131,7 @@ export function FilterBar() {
             </Button>
           </div>
         </div>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
           <Select name="jobType" value={jobType} onValueChange={setJobType}>
             <SelectTrigger><SelectValue placeholder="Job Type" /></SelectTrigger>
             <SelectContent>
@@ -167,6 +170,18 @@ export function FilterBar() {
               <SelectItem value="3d">Last 3 days</SelectItem>
               <SelectItem value="7d">Last 7 days</SelectItem>
               <SelectItem value="14d">Last 14 days</SelectItem>
+            </SelectContent>
+          </Select>
+          <Select name="status" value={status} onValueChange={setStatus}>
+            <SelectTrigger><SelectValue placeholder="Status" /></SelectTrigger>
+            <SelectContent>
+                <SelectItem value="all">All Statuses</SelectItem>
+                <SelectItem value="new">New</SelectItem>
+                <SelectItem value="APPLIED">Applied</SelectItem>
+                <SelectItem value="INTERVIEW">Interview</SelectItem>
+                <SelectItem value="OFFER">Offer</SelectItem>
+                <SelectItem value="REJECTED">Rejected</SelectItem>
+                <SelectItem value="WAITING">Waiting</SelectItem>
             </SelectContent>
           </Select>
         </div>

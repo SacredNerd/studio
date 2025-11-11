@@ -1,3 +1,12 @@
+export type JobStatus =
+  | 'new'
+  | 'APPLIED'
+  | 'INTERVIEW'
+  | 'PARTIALLY_CLEARED'
+  | 'WAITING'
+  | 'OFFER'
+  | 'REJECTED';
+
 export type Job = {
   id: string;
   title: string;
@@ -8,4 +17,5 @@ export type Job = {
   skills: string[];
   profileMatchScore: number;
   description: string;
+  status: JobStatus;
 };
