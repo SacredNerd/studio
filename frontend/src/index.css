@@ -1,0 +1,89 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: 0 0% 100%;
+  --foreground: 0 0% 0%;
+
+  --card: 0 0% 100%;
+  --card-foreground: 0 0% 0%;
+
+  --popover: 0 0% 100%;
+  --popover-foreground: 0 0% 0%;
+
+  --primary: 262 80% 50%;
+  /* Vibrant Purple */
+  --primary-foreground: 0 0% 100%;
+
+  --secondary: 47 95% 57%;
+  /* Bright Yellow */
+  --secondary-foreground: 0 0% 0%;
+
+  --muted: 240 5% 96%;
+  --muted-foreground: 240 4% 46%;
+
+  --accent: 330 80% 60%;
+  /* Hot Pink */
+  --accent-foreground: 0 0% 100%;
+
+  --destructive: 0 84.2% 60.2%;
+  --destructive-foreground: 0 0% 98%;
+
+  --border: 0 0% 0%;
+  /* Black borders */
+  --input: 0 0% 0%;
+  --ring: 0 0% 0%;
+
+  --radius: 0rem;
+  /* Sharp corners */
+
+  --chart-1: 12 76% 61%;
+  --chart-2: 173 58% 39%;
+  --chart-3: 197 37% 24%;
+  --chart-4: 43 74% 66%;
+  --chart-5: 27 87% 67%;
+}
+
+.dark {
+  /* Neobrutalism typically stays high contrast, but for dark mode we invert */
+  --background: 0 0% 10%;
+  --foreground: 0 0% 98%;
+
+  --card: 0 0% 15%;
+  /* Slightly lighter than background */
+  --card-foreground: 0 0% 98%;
+
+  --popover: 0 0% 15%;
+  --popover-foreground: 0 0% 98%;
+
+  --primary: 262 80% 65%;
+  --primary-foreground: 0 0% 100%;
+
+  --secondary: 47 95% 50%;
+  --secondary-foreground: 0 0% 0%;
+
+  --muted: 240 5% 25%;
+  --muted-foreground: 240 4% 80%;
+
+  --accent: 330 80% 60%;
+  --accent-foreground: 0 0% 100%;
+
+  --destructive: 0 62.8% 45%;
+  --destructive-foreground: 0 0% 98%;
+
+  --border: 0 0% 98%;
+  /* White borders in dark mode */
+  --input: 0 0% 20%;
+  --ring: 0 0% 98%;
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+  }
+}
