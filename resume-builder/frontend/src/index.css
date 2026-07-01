@@ -1,0 +1,1223 @@
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap");
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ── Design tokens ──────────────────────────────────────────────────────────
+   Neobrutalism — JOB.HUNT style:
+   • 2px black borders (not 4px)
+   • 2-3px offset shadows (not 8px)
+   • Sharp corners: 4-6px
+   • White / light-grey surfaces
+   • Bold uppercase labels, clean spacing
+   ───────────────────────────────────────────────────────────────────────── */
+
+@layer base {
+    :root {
+        font-family: "Inter", ui-sans-serif, system-ui, sans-serif;
+        color: #111827;
+        background: #f5f5f5;
+    }
+
+    * {
+        @apply box-border;
+    }
+
+    body {
+        @apply m-0 bg-[#f5f5f5] text-slate-900 antialiased;
+    }
+
+    button,
+    input,
+    textarea,
+    select {
+        font: inherit;
+    }
+
+    /* ── Form controls ─────────────────────────────────────────────────────── */
+    input,
+    textarea,
+    select {
+        @apply w-full border-2 border-black bg-white px-3 py-2.5 text-sm text-slate-900 outline-none;
+        border-radius: 5px;
+        box-shadow: 2px 2px 0 #000;
+        transition:
+            box-shadow 0.1s,
+            transform 0.1s;
+    }
+
+    input:focus,
+    textarea:focus,
+    select:focus {
+        box-shadow: 1px 1px 0 #000;
+        transform: translate(1px, 1px);
+    }
+
+    textarea {
+        @apply resize-y;
+        min-height: 80px;
+    }
+
+    input[type="range"] {
+        @apply appearance-none border-0 px-0 py-0;
+        height: 24px;
+        background: linear-gradient(#111827, #111827) center / 100% 2px
+            no-repeat;
+        box-shadow: none;
+        transform: none;
+    }
+    input[type="range"]:focus {
+        transform: none;
+        box-shadow: none;
+    }
+    input[type="range"]::-webkit-slider-runnable-track {
+        height: 8px;
+        border: 2px solid #000;
+        background: #dbeafe;
+        border-radius: 99px;
+    }
+    input[type="range"]::-moz-range-track {
+        height: 8px;
+        border: 2px solid #000;
+        background: #dbeafe;
+        border-radius: 99px;
+    }
+    input[type="range"]::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        width: 18px;
+        height: 18px;
+        margin-top: -7px;
+        border: 2px solid #000;
+        border-radius: 4px;
+        background: #fff;
+        box-shadow: 1px 1px 0 #000;
+    }
+    input[type="range"]::-moz-range-thumb {
+        width: 18px;
+        height: 18px;
+        border: 2px solid #000;
+        border-radius: 4px;
+        background: #fff;
+        box-shadow: 1px 1px 0 #000;
+    }
+
+    @media print {
+        body {
+            background: white;
+        }
+        .no-print {
+            display: none !important;
+        }
+    }
+}
+
+@layer components {
+    /* ── Fields ────────────────────────────────────────────────────────────── */
+    .field {
+        @apply grid gap-1.5;
+    }
+    .field > span {
+        @apply text-xs font-black uppercase tracking-[0.13em] text-slate-600;
+    }
+
+    /* ── App-level layout ─────────────────────────────────────────────────── */
+    .app-shell {
+        @apply min-h-screen bg-[#f5f5f5];
+    }
+
+    /* Topbar */
+    .topbar {
+        @apply flex items-center justify-between gap-4 border-b-2 border-black bg-white px-4 py-3 sm:px-6;
+        position: sticky;
+        top: 0;
+        z-index: 50;
+    }
+
+    /* ── Neobrutalist card ─────────────────────────────────────────────────── */
+    /* Standard card: 2px border, 3px shadow */
+    .nb-card {
+        @apply border-2 border-black bg-white;
+        border-radius: 6px;
+        box-shadow: 3px 3px 0 #000;
+    }
+
+    /* Subtle version — no shadow, thinner feel */
+    .nb-card-flat {
+        @apply border-2 border-black bg-white;
+        border-radius: 6px;
+    }
+
+    /* ── Buttons ───────────────────────────────────────────────────────────── */
+    .nb-btn {
+        @apply inline-flex items-center justify-center gap-2 border-2 border-black px-4 py-2 text-sm font-bold;
+        border-radius: 5px;
+        box-shadow: 2px 2px 0 #000;
+        transition:
+            box-shadow 0.1s,
+            transform 0.1s;
+        cursor: pointer;
+    }
+    .nb-btn:hover {
+        box-shadow: 1px 1px 0 #000;
+        transform: translate(1px, 1px);
+    }
+    .nb-btn:active {
+        box-shadow: 0 0 0 #000;
+        transform: translate(2px, 2px);
+    }
+
+    .nb-btn-primary {
+        @apply bg-[#6d28d9] text-white;
+    }
+    .nb-btn-yellow {
+        @apply bg-[#fde047] text-black;
+    }
+    .nb-btn-white {
+        @apply bg-white text-black;
+    }
+    .nb-btn-ghost {
+        @apply border-0 bg-transparent shadow-none text-slate-600 font-semibold hover:text-black hover:shadow-none hover:transform-none;
+    }
+
+    /* ── Mode toggle (Edit / Customize) ────────────────────────────────────── */
+    .mode-toggle {
+        @apply inline-flex border-2 border-black bg-white;
+        border-radius: 6px;
+        box-shadow: 2px 2px 0 #000;
+        overflow: hidden;
+    }
+    .mode-tab {
+        @apply px-5 py-1.5 text-sm font-bold text-slate-500 transition-colors;
+    }
+    .mode-tab-active {
+        @apply bg-[#6d28d9] text-white;
+    }
+
+    /* ── Progress bar ─────────────────────────────────────────────────────── */
+    .nb-progress-track {
+        @apply h-3 w-full border-2 border-black bg-white;
+        border-radius: 4px;
+        box-shadow: 2px 2px 0 #000;
+    }
+    .nb-progress-bar {
+        @apply h-full;
+        background: #22c55e;
+        border-right: 2px solid #000;
+        border-radius: 3px 0 0 3px;
+        transition: width 0.3s ease;
+    }
+
+    /* ── Suggestions strip ─────────────────────────────────────────────────── */
+    .suggestions-strip {
+        @apply flex items-center gap-2 overflow-x-auto border-b-2 border-black px-4 py-2;
+        scrollbar-width: none;
+    }
+    .suggestions-strip::-webkit-scrollbar {
+        display: none;
+    }
+
+    .sugg-chip {
+        @apply inline-flex shrink-0 items-center gap-1 border border-black px-2.5 py-0.5 text-xs font-semibold text-slate-700;
+        border-radius: 4px;
+        white-space: nowrap;
+    }
+    .sugg-chip-purple {
+        @apply bg-[#ede9fe] text-[#6d28d9] border-[#6d28d9];
+    }
+    .sugg-chip-green {
+        @apply bg-[#dcfce7] text-[#15803d] border-[#15803d];
+    }
+
+    /* ── Spaced section cards ──────────────────────────────────────────────── */
+    .sections-list {
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+    }
+
+    .section-card {
+        background: white;
+        border: 1.5px solid #e2e8f0;
+        border-radius: 6px;
+        overflow: hidden;
+        transition: border-color 0.15s;
+    }
+    .section-card:hover {
+        border-color: #c7d2fe;
+    }
+    .section-card.is-dragging {
+        opacity: 0.4;
+    }
+    .section-card.is-drag-over {
+        border-color: #6d28d9;
+        border-top: 2.5px solid #6d28d9;
+        background: #f5f3ff;
+    }
+    .section-card.is-disabled {
+        opacity: 0.55;
+    }
+
+    .section-header {
+        display: flex;
+        align-items: center;
+        min-height: 48px;
+    }
+
+    .section-expand-btn {
+        flex: 1;
+        display: flex;
+        align-items: center;
+        gap: 9px;
+        padding: 12px 6px 12px 4px;
+        background: none;
+        border: none;
+        cursor: pointer;
+        text-align: left;
+        min-width: 0;
+    }
+    .section-expand-btn:hover {
+        background: #fafbff;
+    }
+
+    .section-body {
+        background: #f8f9fe;
+        border-top: 1.5px solid #e2e8f0;
+        padding: 14px 14px;
+    }
+
+    /* Inline rename input */
+    .section-rename-input {
+        flex: 1;
+        background: transparent;
+        border: none;
+        border-bottom: 1.5px solid #6d28d9;
+        border-radius: 0;
+        box-shadow: none !important;
+        padding: 0 4px;
+        font-size: 0.875rem;
+        font-weight: 700;
+        color: #111827;
+        outline: none;
+        transform: none !important;
+    }
+
+    /* ── Inner item cards (inside accordion, for list items) ──────────────── */
+    .item-card {
+        @apply border-2 border-black bg-white px-4 py-3;
+        border-radius: 5px;
+        box-shadow: 2px 2px 0 #000;
+    }
+
+    /* ── Add section cards ─────────────────────────────────────────────────── */
+    .add-card {
+        @apply flex cursor-pointer items-center gap-2 border-2 border-black bg-white px-3 py-2.5 text-sm font-semibold text-slate-800;
+        border-radius: 5px;
+        box-shadow: 2px 2px 0 #000;
+        transition:
+            box-shadow 0.1s,
+            transform 0.1s;
+    }
+    .add-card:hover {
+        box-shadow: 1px 1px 0 #000;
+        transform: translate(1px, 1px);
+    }
+
+    /* ── Customize tabs ────────────────────────────────────────────────────── */
+    .customize-tab-bar {
+        @apply flex border-b-2 border-black bg-white;
+    }
+    .c-tab {
+        @apply flex-1 border-r-2 border-black px-3 py-3 text-center text-sm font-semibold text-slate-500 last:border-r-0 transition-colors;
+    }
+    .c-tab:hover {
+        @apply bg-slate-50 text-slate-800;
+    }
+    .c-tab-active {
+        @apply bg-[#6d28d9] text-white font-bold;
+    }
+
+    /* ── Template cards ────────────────────────────────────────────────────── */
+    .template-card {
+        @apply cursor-pointer border-2 border-black bg-white p-3 text-left transition-all;
+        border-radius: 5px;
+        box-shadow: 2px 2px 0 #000;
+    }
+    .template-card:hover {
+        box-shadow: 1px 1px 0 #000;
+        transform: translate(1px, 1px);
+    }
+    .template-card-active {
+        @apply border-[#6d28d9] bg-[#f5f3ff];
+        box-shadow: 2px 2px 0 #6d28d9;
+    }
+
+    .template-thumb {
+        @apply relative h-40 border-2 border-dashed border-slate-300 bg-slate-50 p-2;
+        border-radius: 4px;
+        overflow: hidden;
+    }
+    .template-thumb-sidebar {
+        @apply absolute left-0 top-0 h-full w-12;
+        background: var(--accent-color, #6d28d9);
+    }
+    .thumb-line {
+        @apply my-1.5 h-1.5 rounded-sm bg-slate-300;
+    }
+    .thumb-line.short {
+        @apply w-2/3;
+    }
+    .thumb-block {
+        @apply mt-2 h-16 rounded border border-dashed border-slate-300;
+    }
+
+    /* ── Color swatches ────────────────────────────────────────────────────── */
+    .color-swatch {
+        @apply h-9 w-9 cursor-pointer border-2 border-black transition-all;
+        border-radius: 50%;
+        box-shadow: 2px 2px 0 #000;
+    }
+    .color-swatch:hover {
+        box-shadow: 1px 1px 0 #000;
+        transform: translate(1px, 1px);
+    }
+    .color-swatch-active {
+        box-shadow:
+            0 0 0 3px #fff,
+            0 0 0 5px #000;
+    }
+
+    /* ── Filter pills (template filters) ───────────────────────────────────── */
+    .filter-pill {
+        @apply cursor-pointer border-2 border-black bg-white px-3 py-1 text-xs font-semibold;
+        border-radius: 99px;
+        box-shadow: 2px 2px 0 #000;
+    }
+    .filter-pill-active {
+        @apply bg-[#6d28d9] text-white border-[#6d28d9];
+    }
+
+    /* ── Badges / export tags ─────────────────────────────────────────────── */
+    .export-tag {
+        @apply inline-flex items-center border-2 border-black bg-[#fde047] px-1.5 py-0.5 text-[10px] font-black;
+        border-radius: 3px;
+        box-shadow: 1px 1px 0 #000;
+    }
+
+    .section-badge {
+        @apply inline-flex items-center border border-[#15803d] bg-[#dcfce7] px-1.5 py-0.5 text-[10px] font-bold text-[#15803d];
+        border-radius: 3px;
+    }
+
+    /* ── Misc UI helpers ─────────────────────────────────────────────────────*/
+    .kicker {
+        @apply text-[10px] font-black uppercase tracking-[0.18em] text-slate-500;
+    }
+
+    .nb-toggle {
+        @apply border-2 border-black px-3 py-1 text-xs font-black;
+        border-radius: 4px;
+        box-shadow: 2px 2px 0 #000;
+    }
+    .nb-toggle-on {
+        @apply bg-[#bbf7d0] text-[#14532d];
+    }
+    .nb-toggle-off {
+        @apply bg-white text-slate-600;
+    }
+
+    .nb-info {
+        @apply border-2 border-[#1d4ed8] bg-[#dbeafe] px-3 py-2 text-xs text-[#1e3a8a];
+        border-radius: 5px;
+    }
+
+    .nb-value-box {
+        @apply border-2 border-black bg-white px-2.5 py-1 text-center text-xs font-bold tabular-nums;
+        border-radius: 4px;
+        box-shadow: 1px 1px 0 #000;
+        min-width: 60px;
+    }
+
+    .nb-upload {
+        @apply flex cursor-pointer items-center gap-3 border-2 border-dashed border-black bg-[#eff6ff] px-4 py-3;
+        border-radius: 5px;
+    }
+
+    .nb-banner {
+        @apply flex flex-col items-start justify-between gap-3 border-2 border-black bg-[#ede9fe] px-4 py-3 sm:flex-row sm:items-center;
+        border-radius: 5px;
+        box-shadow: 2px 2px 0 #000;
+    }
+    .nb-banner-label {
+        @apply inline-flex items-center border-2 border-black bg-[#6d28d9] px-2 py-0.5 text-[10px] font-black uppercase tracking-widest text-white;
+        border-radius: 3px;
+    }
+
+    .nb-choice {
+        @apply cursor-pointer border-2 border-black bg-white px-3 py-3 text-center text-sm font-semibold;
+        border-radius: 5px;
+        box-shadow: 2px 2px 0 #000;
+    }
+    .nb-choice:hover {
+        box-shadow: 1px 1px 0 #000;
+        transform: translate(1px, 1px);
+    }
+    .nb-choice-active {
+        @apply border-[#6d28d9] bg-[#ede9fe] text-[#6d28d9];
+        box-shadow: 2px 2px 0 #6d28d9;
+    }
+
+    /* ── Editor two-panel layout ─────────────────────────────────────────── */
+    .editor-grid {
+        @apply grid grid-cols-1 gap-3 xl:grid-cols-2;
+    }
+
+    /* Left panel scrolls, right panel sticky */
+    .editor-left {
+        @apply flex flex-col border-2 border-black bg-white xl:h-[calc(100vh-5.5rem)] xl:overflow-hidden;
+        border-radius: 6px;
+        box-shadow: 3px 3px 0 #000;
+    }
+
+    .editor-right {
+        @apply xl:sticky xl:top-[5.5rem] xl:h-[calc(100vh-5.5rem)];
+    }
+
+    /* ── Resume preview shell ─────────────────────────────────────────────── */
+    .preview-shell {
+        @apply flex h-full flex-col border-2 border-black bg-white;
+        border-radius: 6px;
+        box-shadow: 3px 3px 0 #000;
+        overflow: hidden;
+    }
+
+    .preview-topbar {
+        @apply flex shrink-0 items-center justify-between border-b-2 border-black bg-white px-4 py-2.5;
+    }
+
+    .preview-scroll {
+        @apply flex-1 overflow-y-auto overflow-x-hidden bg-[#f3f4f6] p-3;
+    }
+
+    /* ── Resume page itself ───────────────────────────────────────────────── */
+    .resume-page {
+        font-family: var(--body-font, Arial), sans-serif;
+        line-height: var(--line-height, 1.4);
+        font-size: var(--font-size-body, 12px);
+        background: white;
+        box-shadow: 0 2px 14px rgba(0, 0, 0, 0.12);
+        overflow-wrap: anywhere;
+    }
+
+    .resume-name {
+        font-family: var(--heading-font, Arial), sans-serif;
+        font-size: var(--font-size-primary, 26px);
+        font-weight: var(--heading-weight, 700);
+        line-height: 1.1;
+    }
+    .resume-title {
+        font-family: var(--heading-font, Arial), sans-serif;
+        font-size: var(--font-size-secondary, 16px);
+        font-weight: var(--subheading-weight, 500);
+        color: var(--accent-color, #6d28d9);
+    }
+    .resume-section-title {
+        font-family: var(--heading-font, Arial), sans-serif;
+        font-size: var(--font-size-section, 10px);
+        font-weight: var(--section-weight, 700);
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: var(--accent-color, #6d28d9);
+        border-bottom: 1.5px solid var(--accent-color, #6d28d9);
+        padding-bottom: 3px;
+        margin-bottom: var(--title-gap, 6px);
+    }
+    .resume-header {
+        margin-bottom: var(--section-gap, 12px);
+    }
+    .resume-section {
+        margin-bottom: var(--section-gap, 12px);
+    }
+    .resume-stack {
+        display: grid;
+        gap: var(--content-gap, 10px);
+    }
+    .resume-entry {
+        display: grid;
+        gap: var(--inner-padding, 2px);
+        page-break-inside: avoid;
+        break-inside: avoid;
+    }
+    .resume-page article {
+        page-break-inside: avoid;
+        break-inside: avoid;
+    }
+    .resume-entry-title {
+        font-weight: var(--subheading-weight, 600);
+        font-family: var(--heading-font, Arial), sans-serif;
+    }
+    .resume-mini-title {
+        font-weight: 600;
+    }
+    .resume-accent {
+        color: var(--accent-color, #6d28d9);
+    }
+    .resume-date {
+        color: #475569;
+        font-size: 0.85em;
+        white-space: nowrap;
+    }
+    .resume-meta {
+        color: #475569;
+        font-size: 0.85em;
+    }
+    .resume-chip {
+        display: inline-flex;
+        align-items: center;
+        border: 1px solid #cbd5e1;
+        border-radius: 4px;
+        padding: 1px 8px;
+        font-size: 0.8em;
+    }
+    .resume-list {
+        margin: 4px 0 0;
+        padding-left: 18px;
+    }
+    .resume-list li {
+        margin-bottom: 2px;
+    }
+
+    /* ── Section action icons ────────────────────────────────────────────────── */
+    .section-drag-handle {
+        padding: 0 8px;
+        cursor: grab;
+        color: #d1d5db;
+        flex-shrink: 0;
+        display: flex;
+        align-items: center;
+    }
+    .section-drag-handle:active {
+        cursor: grabbing;
+    }
+
+    .section-actions {
+        display: flex;
+        align-items: center;
+        gap: 1px;
+        padding-right: 10px;
+        flex-shrink: 0;
+    }
+
+    .icon-action {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 26px;
+        height: 26px;
+        border: none;
+        border-radius: 4px;
+        background: transparent;
+        color: #9ca3af;
+        cursor: pointer;
+    }
+    .icon-action:hover {
+        background: #f1f5f9;
+        color: #374151;
+    }
+    .icon-action.danger:hover {
+        background: #fef2f2;
+        color: #ef4444;
+    }
+
+    /* Eye toggle for section visibility */
+    .section-vis-btn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 26px;
+        height: 26px;
+        border: none;
+        border-radius: 4px;
+        background: transparent;
+        cursor: pointer;
+    }
+    .section-vis-btn.visible {
+        color: #6d28d9;
+    }
+    .section-vis-btn.hidden-sec {
+        color: #d1d5db;
+    }
+
+    .section-chevron {
+        color: #94a3b8;
+        display: flex;
+        align-items: center;
+        transition: transform 0.15s;
+    }
+    .section-chevron.open {
+        transform: rotate(180deg);
+    }
+
+    /* ── Rich text editor ────────────────────────────────────────────────────── */
+    .rich-editor {
+        border: 2px solid #000;
+        border-radius: 5px;
+        box-shadow: 2px 2px 0 #000;
+        overflow: visible;
+        background: white;
+    }
+
+    .rich-toolbar {
+        display: flex;
+        align-items: center;
+        gap: 1px;
+        padding: 4px 6px;
+        background: #f8fafc;
+        border-bottom: 1.5px solid #e2e8f0;
+        flex-wrap: wrap;
+    }
+
+    .toolbar-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 26px;
+        height: 26px;
+        padding: 0 4px;
+        border-radius: 3px;
+        background: none;
+        border: none;
+        cursor: pointer;
+        font-size: 13px;
+        font-weight: 700;
+        color: #374151;
+        line-height: 1;
+        transition: background 0.1s;
+    }
+    .toolbar-btn:hover {
+        background: #e5e7eb;
+    }
+    .toolbar-btn-active {
+        background: #dbeafe !important;
+        color: #1d4ed8 !important;
+    }
+
+    .toolbar-sep {
+        display: inline-block;
+        width: 1px;
+        height: 18px;
+        background: #e2e8f0;
+        margin: 0 3px;
+        flex-shrink: 0;
+    }
+
+    .rich-content {
+        padding: 10px 12px;
+        min-height: 80px;
+        outline: none;
+        font-size: 14px;
+        line-height: 1.6;
+        color: #111827;
+        white-space: pre-wrap;
+        overflow-wrap: anywhere;
+    }
+    .resume-rich-content ul {
+        list-style: disc;
+        padding-left: 18px;
+    }
+    .resume-rich-content ol {
+        list-style: decimal;
+        padding-left: 18px;
+    }
+    .resume-rich-content strong,
+    .resume-rich-content b {
+        font-weight: 700;
+    }
+    .resume-rich-content em,
+    .resume-rich-content i {
+        font-style: italic;
+    }
+    .resume-rich-content a {
+        color: var(--accent-color, #2563eb);
+    }
+
+    .rich-content:empty::before {
+        content: attr(data-placeholder);
+        color: #9ca3af;
+        pointer-events: none;
+    }
+    .rich-content ul {
+        list-style: disc;
+        padding-left: 20px;
+        margin: 4px 0;
+    }
+    .rich-content ol {
+        list-style: decimal;
+        padding-left: 20px;
+        margin: 4px 0;
+    }
+    .rich-content a {
+        color: #2563eb;
+        text-decoration: underline;
+    }
+    .rich-content b,
+    .rich-content strong {
+        font-weight: 700;
+    }
+    .rich-content i,
+    .rich-content em {
+        font-style: italic;
+    }
+
+    .color-popup {
+        position: absolute;
+        top: calc(100% + 4px);
+        left: 0;
+        z-index: 200;
+        background: white;
+        border: 2px solid #000;
+        border-radius: 6px;
+        padding: 6px;
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 3px;
+        box-shadow: 2px 2px 0 #000;
+        min-width: 112px;
+    }
+
+    .color-dot {
+        width: 22px;
+        height: 22px;
+        border-radius: 50%;
+        border: 1.5px solid rgba(0, 0, 0, 0.15);
+        cursor: pointer;
+        transition: transform 0.1s;
+    }
+    .color-dot:hover {
+        transform: scale(1.25);
+        border-color: #000;
+    }
+
+    /* ── Step navigation ───────────────────────────────────────── */
+    .step-nav {
+        @apply flex w-full items-center overflow-x-auto px-3 py-2.5;
+        scrollbar-width: none;
+    }
+    .step-nav::-webkit-scrollbar {
+        display: none;
+    }
+
+    .step-item {
+        @apply flex shrink-0 cursor-pointer flex-col items-center gap-1 border-0 bg-transparent px-2 py-1 text-slate-400;
+        min-width: 60px;
+    }
+    .step-item:hover .step-dot {
+        border-color: #6d28d9;
+        color: #6d28d9;
+    }
+
+    .step-dot {
+        @apply flex h-7 w-7 items-center justify-center rounded-full border-2 border-slate-300 bg-white text-xs font-black;
+    }
+    .step-label {
+        @apply whitespace-nowrap text-[10px] font-semibold;
+    }
+    .step-connector {
+        @apply h-px flex-1 bg-slate-200;
+        min-width: 10px;
+    }
+    .step-item-active .step-dot {
+        border-color: #6d28d9;
+        background: #6d28d9;
+        color: white;
+    }
+    .step-item-active .step-label {
+        font-weight: 800;
+        color: #6d28d9;
+    }
+    .step-item-done .step-dot {
+        border-color: #16a34a;
+        background: #16a34a;
+        color: white;
+    }
+    .step-item-done .step-label {
+        color: #16a34a;
+    }
+
+    /* ── Drag and drop ───────────────────────────────────────── */
+    .drag-handle {
+        @apply cursor-grab;
+    }
+    .drag-handle:active {
+        @apply cursor-grabbing;
+    }
+    .drag-over {
+        background: #ede9fe !important;
+        border-top: 2px dashed #6d28d9 !important;
+    }
+
+    /* ── Dashboard card ───────────────────────────────────────── */
+    .dashboard-card {
+        @apply cursor-pointer border-2 border-black bg-white p-4;
+        border-radius: 6px;
+        box-shadow: 2px 2px 0 #000;
+        transition:
+            transform 0.1s,
+            box-shadow 0.1s;
+    }
+    .dashboard-card:hover {
+        transform: translate(-1px, -1px);
+        box-shadow: 3px 3px 0 #000;
+    }
+
+    @media print {
+        .no-print {
+            display: none !important;
+        }
+        .preview-shell {
+            border: none;
+            box-shadow: none;
+            background: white;
+        }
+        .resume-page {
+            box-shadow: none;
+            width: 100% !important;
+            min-height: auto !important;
+        }
+    }
+}
+
+@media (max-width: 768px) {
+    body {
+        font-size: 13px !important;
+    }
+
+    /* Preview Page font sizes and elements scaling on mobile */
+    .resume-page {
+        --font-size-body: 7.2px !important;
+        --font-size-primary: 13px !important;
+        --font-size-secondary: 9px !important;
+        --font-size-section: 8px !important;
+        
+        --spacing-multiplier: 0.4 !important;
+        
+        font-size: var(--font-size-body) !important;
+        min-height: auto !important;
+    }
+
+    .resume-page img {
+        width: 48px !important;
+        height: 48px !important;
+        margin-bottom: 6px !important;
+        border-width: 1.5px !important;
+    }
+
+    .resume-page svg {
+        width: 8px !important;
+        height: 8px !important;
+    }
+
+    .resume-page aside, .resume-page main {
+        padding-top: var(--margin-vertical) !important;
+        padding-bottom: var(--margin-vertical) !important;
+        padding-left: var(--margin-horizontal) !important;
+        padding-right: var(--margin-horizontal) !important;
+    }
+
+    /* Form Controls */
+    input:not([type="range"]),
+    textarea,
+    select {
+        padding: 6px 10px !important;
+        font-size: 12px !important;
+        box-shadow: 1.5px 1.5px 0 #000 !important;
+        border-width: 1.5px !important;
+    }
+    input:not([type="range"]):focus,
+    textarea:focus,
+    select:focus {
+        box-shadow: 0.5px 0.5px 0 #000 !important;
+        transform: translate(1px, 1px) !important;
+    }
+    
+    textarea {
+        min-height: 60px !important;
+    }
+
+    /* Buttons */
+    .nb-btn {
+        padding: 6px 12px !important;
+        font-size: 12px !important;
+        box-shadow: 1.5px 1.5px 0 #000 !important;
+        border-width: 1.5px !important;
+    }
+    .nb-btn:hover {
+        box-shadow: 0.5px 0.5px 0 #000 !important;
+        transform: translate(1px, 1px) !important;
+    }
+    .nb-btn:active {
+        box-shadow: 0 0 0 #000 !important;
+        transform: translate(1.5px, 1.5px) !important;
+    }
+
+    /* Card and Panel Spacings */
+    .nb-card, .dashboard-card, .editor-left, .preview-shell {
+        border-width: 1.5px !important;
+        box-shadow: 2px 2px 0 #000 !important;
+        border-radius: 5px !important;
+    }
+    .nb-card-flat {
+        border-width: 1.5px !important;
+        border-radius: 5px !important;
+    }
+
+    /* Spacings within editor panels */
+    .flex-1.overflow-y-auto {
+        padding: 12px !important;
+    }
+    .space-y-6 > * + * {
+        margin-top: 12px !important;
+    }
+    .space-y-3 > * + * {
+        margin-top: 8px !important;
+    }
+
+    /* Accordions and Item Cards */
+    .section-header {
+        min-height: 38px !important;
+    }
+    .section-expand-btn {
+        padding: 8px 10px !important;
+    }
+    .section-body {
+        padding: 10px !important;
+        border-top-width: 1.5px !important;
+    }
+    .item-card {
+        padding: 10px !important;
+        border-width: 1.5px !important;
+        box-shadow: 1.5px 1.5px 0 #000 !important;
+    }
+
+    /* Swatches & Color Presets */
+    .color-swatch {
+        height: 28px !important;
+        width: 28px !important;
+        box-shadow: 1.5px 1.5px 0 #000 !important;
+        border-width: 1.5px !important;
+    }
+    .color-swatch-active {
+        box-shadow:
+            0 0 0 2px #fff,
+            0 0 0 3.5px #000 !important;
+    }
+    .filter-pill {
+        padding: 3px 10px !important;
+        font-size: 11px !important;
+        border-width: 1.5px !important;
+        box-shadow: 1.5px 1.5px 0 #000 !important;
+    }
+
+    /* Topbar height and padding */
+    .topbar {
+        padding: 10px 12px !important;
+        border-bottom-width: 1.5px !important;
+    }
+    .mode-tab {
+        padding: 5px 12px !important;
+        font-size: 11px !important;
+    }
+
+    /* Step dot/nav items */
+    .step-nav {
+        padding: 6px 8px !important;
+        border-bottom-width: 1.5px !important;
+    }
+    .step-item {
+        min-width: 50px !important;
+        padding: 2px !important;
+    }
+    .step-dot {
+        height: 22px !important;
+        width: 22px !important;
+        font-size: 10px !important;
+        border-width: 1.5px !important;
+    }
+    .step-label {
+        font-size: 8px !important;
+    }
+
+    /* Value boxes and choices */
+    .nb-value-box {
+        padding: 3px 6px !important;
+        font-size: 11px !important;
+        min-width: 50px !important;
+        border-width: 1.5px !important;
+        box-shadow: 1px 1px 0 #000 !important;
+    }
+    .nb-choice {
+        padding: 8px !important;
+        font-size: 12px !important;
+        border-width: 1.5px !important;
+        box-shadow: 1.5px 1.5px 0 #000 !important;
+    }
+    .nb-choice:hover {
+        box-shadow: 0.5px 0.5px 0 #000 !important;
+        transform: translate(1px, 1px) !important;
+    }
+    .nb-choice-active {
+        box-shadow: 1.5px 1.5px 0 var(--accent-color, #6d28d9) !important;
+    }
+
+    /* Custom toggle and banner */
+    .nb-toggle {
+        padding: 3px 8px !important;
+        font-size: 11px !important;
+        border-width: 1.5px !important;
+        box-shadow: 1.5px 1.5px 0 #000 !important;
+    }
+    .nb-banner {
+        padding: 10px 12px !important;
+        border-width: 1.5px !important;
+        box-shadow: 1.5px 1.5px 0 #000 !important;
+    }
+    
+    /* Drag-and-drop Layout lists */
+    .grid-cols-2 {
+        gap: 8px !important;
+    }
+    .bg-slate-50.border-2 {
+        padding: 8px !important;
+        border-width: 1.5px !important;
+        min-height: 220px !important;
+    }
+}
+
+@media print {
+    /* Zero page margin = no browser header/footer (title, URL, date, page#) */
+    @page {
+        margin: 0;
+        size: auto;
+    }
+
+    /* ── Hide everything that isn't the resume ── */
+    body {
+        background: white !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+        padding: 0 !important;
+        margin: 0 !important;
+    }
+
+    /* Aggressively hide all UI chrome */
+    .no-print,
+    .topbar,
+    .editor-left,
+    .preview-topbar,
+    .preview-shell > .absolute,
+    .preview-shell > div:last-child,
+    .mode-toggle,
+    .nb-btn,
+    nav {
+        display: none !important;
+        visibility: hidden !important;
+        height: 0 !important;
+        overflow: hidden !important;
+    }
+
+    /* ── Flatten the editor layout so only resume shows ── */
+    .app-shell {
+        min-height: auto !important;
+        background: white !important;
+        padding: 0 !important;
+        margin: 0 !important;
+    }
+
+    .editor-grid {
+        display: block !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        gap: 0 !important;
+        max-width: none !important;
+    }
+
+    .editor-right {
+        position: static !important;
+        height: auto !important;
+        overflow: visible !important;
+        width: 100% !important;
+    }
+
+    .preview-shell {
+        box-shadow: none !important;
+        background: white !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        border: none !important;
+        height: auto !important;
+        overflow: visible !important;
+        border-radius: 0 !important;
+    }
+
+    .preview-scroll {
+        overflow: visible !important;
+        background: white !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        height: auto !important;
+    }
+
+    /* ── Resume page itself ── */
+    .resume-page {
+        box-shadow: none !important;
+        margin: 0 !important;
+        width: 100% !important;
+        max-width: none !important;
+        min-height: auto !important;
+        background: white !important;
+        overflow: visible !important;
+        border-radius: 0 !important;
+    }
+
+    /* Ensure correct box sizing */
+    main, aside {
+        box-sizing: border-box;
+    }
+
+    /* ── Page break protection ── */
+
+    /* Allow long sections to break across pages */
+    .resume-page section {
+        break-inside: auto !important;
+        page-break-inside: auto !important;
+    }
+
+    /* Keep individual entries (work items, education items) together */
+    .resume-page article {
+        break-inside: avoid !important;
+        page-break-inside: avoid !important;
+    }
+
+    /* Don't orphan a section header at the bottom of a page */
+    .resume-page section > div:first-child {
+        break-after: avoid-page !important;
+        page-break-after: avoid !important;
+    }
+
+    /* Keep footer together */
+    .resume-page footer {
+        break-inside: avoid !important;
+        page-break-inside: avoid !important;
+    }
+    
+    /* Unset the JS dynamic margins injected for on-screen preview 
+       so the native print engine can calculate breaks properly */
+    .js-page-break-element {
+        margin-top: 0 !important;
+    }
+
+    /* Hide the visual page-break indicator overlay */
+    .resume-page > .pointer-events-none {
+        display: none !important;
+    }
+}
