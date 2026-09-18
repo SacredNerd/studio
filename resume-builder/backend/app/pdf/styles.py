@@ -28,31 +28,21 @@ from app.models.resume import (
 # ─── Font resolution ─────────────────────────────────────────────────────────
 #
 # ReportLab ships with three core PostScript families: Helvetica, Times, and
-# Courier. To honor the editor's font choices (Inter, Calibri, Arial, Georgia,
-# Poppins) we would need to register the corresponding TTFs. As a first cut we
-# alias every "sans-serif" choice to Helvetica and Georgia to Times — the PDF
-# will read cleanly even if a Linux server doesn't have Calibri. Bundling Inter
-# and Poppins TTFs in app/pdf/fonts/ is a follow-up.
+# Courier. This module checks for TTF files in app/pdf/fonts/ and registers
+# them with ReportLab so the PDF can use the same fonts as the preview.
+# If a font has no registered TTF, it falls back to Helvetica (sans) or
+# Times-Roman (serif). Place TTF files named like "Inter-Regular.ttf",
+# "Inter-Bold.ttf", etc. in app/pdf/fonts/ to enable them.
+
+from app.pdf.fonts import is_serif, resolve_family
 
 
 _SANS_FAMILY = "Helvetica"
 _SERIF_FAMILY = "Times-Roman"
 
-# Map editor font name → ReportLab family base name.
-_FAMILY_MAP = {
-    "Inter": _SANS_FAMILY,
-    "Calibri": _SANS_FAMILY,
-    "Arial": _SANS_FAMILY,
-    "Poppins": _SANS_FAMILY,
-    "Helvetica": _SANS_FAMILY,
-    "Georgia": _SERIF_FAMILY,
-    "Times": _SERIF_FAMILY,
-    "Times New Roman": _SERIF_FAMILY,
-}
-
 
 def _resolve_family(name: str) -> str:
-    return _FAMILY_MAP.get(name, _SANS_FAMILY)
+    return resolve_family(name)
 
 
 def _weight_is_bold(weight: FontWeightOption) -> bool:
@@ -106,6 +96,7 @@ class Styles:
     accent: colors.Color
     primary_text: colors.Color
     secondary_text: colors.Color
+    text: colors.Color
     background: colors.Color
 
     # raw font metrics
@@ -127,6 +118,7 @@ class Styles:
     # paragraph styles — pre-built for reuse
     body: ParagraphStyle
     body_secondary: ParagraphStyle
+    body_muted: ParagraphStyle
     primary_heading: ParagraphStyle
     secondary_heading: ParagraphStyle
     section_title: ParagraphStyle
@@ -146,6 +138,7 @@ def build_styles(custom: ResumeCustomization) -> Styles:
     accent = _hex(custom.primaryColor, "#263238")
     primary_text = _hex(custom.primaryTextColor, "#111827")
     secondary_text = _hex(custom.secondaryTextColor, "#475569")
+    text = _hex(custom.textColor, "#1f2937")
     background = _hex(custom.backgroundColor, "#ffffff")
 
     body_size = int(custom.fontSizes.body)
@@ -153,6 +146,10 @@ def build_styles(custom: ResumeCustomization) -> Styles:
     prim_size = int(custom.fontSizes.primaryHeading)
     sec_h_size = int(custom.fontSizes.secondaryHeading)
     lh = float(custom.lineHeight or 1.0)
+    # Floor a couple of spacing knobs so resumes saved with very tight values
+    # still render legible separation (mirrors the frontend preview floors).
+    inner_pad = max(int(custom.contentInnerPadding), 3)
+    title_gap = max(int(custom.titleContentGap), 6)
 
     body_font = _font_variant(
         body_family, _weight_is_bold(custom.fontWeights.body), italic=False
@@ -184,7 +181,7 @@ def build_styles(custom: ResumeCustomization) -> Styles:
         fontName=body_font,
         fontSize=body_size,
         leading=body_size * lh,
-        textColor=primary_text,
+        textColor=text,
         spaceAfter=2,
     )
     body_secondary = ParagraphStyle(
@@ -193,6 +190,13 @@ def build_styles(custom: ResumeCustomization) -> Styles:
         textColor=secondary_text,
         fontSize=max(body_size - 1, 8),
         leading=max(body_size - 1, 8) * lh,
+    )
+    # Body-sized text in the secondary color (skill lists, languages, hobbies —
+    # which the preview renders in the secondary text color at body size).
+    body_muted = ParagraphStyle(
+        "body_muted",
+        parent=body,
+        textColor=secondary_text,
     )
     primary_heading = ParagraphStyle(
         "primary_heading",
@@ -207,7 +211,7 @@ def build_styles(custom: ResumeCustomization) -> Styles:
         fontName=sub_bold,
         fontSize=sec_h_size,
         leading=sec_h_size * 1.1,
-        textColor=accent,
+        textColor=secondary_text,
         spaceAfter=4,
     )
     section_title = ParagraphStyle(
@@ -216,7 +220,7 @@ def build_styles(custom: ResumeCustomization) -> Styles:
         fontSize=sec_size,
         leading=sec_size * 1.2,
         textColor=accent,
-        spaceAfter=custom.titleContentGap,
+        spaceAfter=title_gap,
     )
     item_title = ParagraphStyle(
         "item_title",
@@ -224,13 +228,15 @@ def build_styles(custom: ResumeCustomization) -> Styles:
         fontSize=body_size,
         leading=body_size * lh,
         textColor=primary_text,
+        spaceAfter=inner_pad,
     )
     item_subtitle = ParagraphStyle(
         "item_subtitle",
         fontName=body_font,
         fontSize=max(body_size - 1, 8),
         leading=max(body_size - 1, 8) * lh,
-        textColor=accent,
+        textColor=secondary_text,
+        spaceAfter=inner_pad,
     )
     date_right = ParagraphStyle(
         "date_right",
@@ -279,6 +285,7 @@ def build_styles(custom: ResumeCustomization) -> Styles:
         accent=accent,
         primary_text=primary_text,
         secondary_text=secondary_text,
+        text=text,
         background=background,
         body_size=body_size,
         section_title_size=sec_size,
@@ -286,12 +293,13 @@ def build_styles(custom: ResumeCustomization) -> Styles:
         secondary_heading_size=sec_h_size,
         line_height=lh,
         section_gap=int(custom.betweenSections),
-        title_content_gap=int(custom.titleContentGap),
+        title_content_gap=title_gap,
         content_block_gap=int(custom.contentBlockGap),
-        content_inner_padding=int(custom.contentInnerPadding),
+        content_inner_padding=inner_pad,
         customization=custom,
         body=body,
         body_secondary=body_secondary,
+        body_muted=body_muted,
         primary_heading=primary_heading,
         secondary_heading=secondary_heading,
         section_title=section_title,

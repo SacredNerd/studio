@@ -34,9 +34,12 @@ def _render(
     if not items:
         return []
     out: list[Flowable] = []
-    out.extend(section_header(label_for(key, styles), styles, sidebar=sidebar))
     for idx, (title, org, date_str, desc) in enumerate(items):
         block: list[Flowable] = []
+        if idx == 0:
+            block.extend(section_header(label_for(key, styles), styles, sidebar=sidebar))
+        else:
+            block.append(block_gap(styles))
         title_p = Paragraph(_e(title), styles.item_title if not sidebar else styles.sidebar_item_title)
         subtitle_p = Paragraph(_e(org), styles.item_subtitle) if org else None
         date_p = Paragraph(_e(date_str), styles.date_right)
@@ -46,8 +49,6 @@ def _render(
         block.append(two_column_row(left_block, date_p, styles))
         block.extend(rich(desc, styles, sidebar=sidebar))
         out.append(keep(block))
-        if idx != len(items) - 1:
-            out.append(block_gap(styles))
     out.append(section_gap(styles))
     return out
 

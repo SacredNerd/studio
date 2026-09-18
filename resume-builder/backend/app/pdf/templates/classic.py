@@ -9,7 +9,7 @@ from reportlab.platypus import BaseDocTemplate, Frame, PageTemplate
 from app.models.resume import ResumeData
 from app.pdf.sections.headerfooter import render_footer_text, render_main_header
 from app.pdf.styles import Styles
-from app.pdf.templates._dispatch import render_section, section_order
+from app.pdf.templates._dispatch import render_section, section_order, shown
 
 
 def _on_page(canvas, doc) -> None:
@@ -67,7 +67,7 @@ def render(data: ResumeData, styles: Styles, stream: IO[bytes]) -> None:
     for key in section_order(data):
         story.extend(render_section(key, data, styles))
 
-    if data.headerFooter.footerText:
+    if shown(data, "headerFooter") and data.headerFooter.footerText:
         story.extend(render_footer_text(data.headerFooter.footerText, styles))
 
     doc.build(story)

@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from reportlab.platypus import Flowable
+from reportlab.platypus import Flowable, KeepTogether
 
 from app.models.resume import ResumeData
 from app.pdf.sections._common import label_for, rich, section_gap, section_header
@@ -14,7 +14,9 @@ def render(key: str, data: ResumeData, styles: Styles, *, sidebar: bool = False)
     if not text.strip():
         return []
     out: list[Flowable] = []
-    out.extend(section_header(label_for(key, styles), styles, sidebar=sidebar))
-    out.extend(rich(text, styles, sidebar=sidebar))
+    block: list[Flowable] = []
+    block.extend(section_header(label_for(key, styles), styles, sidebar=sidebar))
+    block.extend(rich(text, styles, sidebar=sidebar))
+    out.append(KeepTogether(block))
     out.append(section_gap(styles))
     return out

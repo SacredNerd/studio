@@ -92,7 +92,12 @@ _DISPATCH: dict[str, Callable] = {
 
 def section_order(data: ResumeData) -> list[str]:
     order = data.customization.sectionOrder or DEFAULT_ORDER
-    return [k for k in order if k not in ("headerFooter", "personalDetails")]
+    # `headerFooter` / `personalDetails` are rendered by the templates' header.
+    # `websites` is rendered inline in the header as link chips (mirrors the
+    # frontend, where the standalone websites section renders null), so it must
+    # not also appear as its own section.
+    excluded = ("headerFooter", "personalDetails", "websites")
+    return [k for k in order if k not in excluded]
 
 
 def shown(data: ResumeData, key: str) -> bool:

@@ -10,6 +10,7 @@ from typing import Optional
 
 from reportlab.lib import colors
 from reportlab.lib.enums import TA_CENTER, TA_LEFT, TA_RIGHT
+from reportlab.lib.styles import ParagraphStyle
 from reportlab.lib.utils import ImageReader
 from reportlab.platypus import (
     Flowable,
@@ -27,6 +28,32 @@ from app.pdf.styles import Styles
 
 def _e(t: str) -> str:
     return _html.escape(t or "", quote=False)
+
+
+def _contact_link(value: str, style) -> Paragraph:
+    """Render a contact value as a clickable link when appropriate."""
+    v = value.strip()
+    if not v:
+        return Paragraph("", style)
+    if "@" in v and "." in v.split("@")[-1]:
+        href = f"mailto:{v}"
+    elif re.match(r"^\+?[\d\s\-()]{6,}$", v):
+        href = f"tel:{re.sub(r'[^\d+]', '', v)}"
+    elif not re.match(r"^https?://", v, re.IGNORECASE):
+        href = f"https://{v}"
+    else:
+        href = v
+    return Paragraph(f'<a href="{_e(href)}"><font color="#1d4ed8"><u>{_e(v)}</u></font></a>', style)
+
+
+def _ensure_url(url: str) -> str:
+    if not url:
+        return "#"
+    if re.match(r"^https?://", url, re.IGNORECASE):
+        return url
+    if "@" in url:
+        return f"mailto:{url}"
+    return f"https://{url}"
 
 
 _ALIGN_MAP = {"left": TA_LEFT, "center": TA_CENTER, "right": TA_RIGHT}
@@ -52,7 +79,10 @@ def _photo_flowable(photo: Optional[str], size_px: int) -> Optional[Image]:
 
 
 def render_main_header(data: ResumeData, styles: Styles) -> list[Flowable]:
-    """The header used by classic / steady-form / specialist."""
+    """The header used by classic / steady-form / specialist / vivid."""
+    if styles.customization.selectedTemplate == "vivid":
+        return render_vivid_header(data, styles)
+
     pd: PersonalDetails = data.personalDetails
     align = (styles.customization.headerAlignment or "left").lower()
 
@@ -70,18 +100,23 @@ def render_main_header(data: ResumeData, styles: Styles) -> list[Flowable]:
     contact_lines = []
     for value in (pd.location, pd.phone, pd.email, pd.website):
         if value:
-            contact_lines.append(_e(value))
+            contact_lines.append(value)
     contact_block = []
     contact_style = _aligned(styles.body_secondary, align)
     for line in contact_lines:
-        contact_block.append(Paragraph(line, contact_style))
+        contact_block.append(_contact_link(line, contact_style))
 
     # Links (websites array)
     link_chips: list[Flowable] = []
     links = [l for l in data.sections.websites if (l.label or l.value)]
     if links:
-        link_text = "  ·  ".join(_e(l.label or l.value) for l in links)
-        link_chips.append(Paragraph(link_text, _aligned(styles.body_secondary, align)))
+        link_chips.append(Paragraph(
+            "  ·  ".join(
+                f'<a href="{_ensure_url(l.value or l.label)}"><font color="#1d4ed8"><u>{_e(l.label or l.value)}</u></font></a>'
+                for l in links
+            ),
+            _aligned(styles.body_secondary, align),
+        ))
 
     show_photo = (
         styles.customization.showPhoto
@@ -174,7 +209,7 @@ def render_sidebar_identity(data: ResumeData, styles: Styles) -> list[Flowable]:
     contact_style = _clone(styles.sidebar_body, color=colors.HexColor("#e2e8f0"))
     for value in (pd.location, pd.phone, pd.email, pd.website):
         if value:
-            out.append(Paragraph(_e(value), contact_style))
+            out.append(_contact_link(value, contact_style))
     out.append(Spacer(1, styles.section_gap))
     return out
 
@@ -210,3 +245,80 @@ def _clone(base, *, color=None):
     if color is not None:
         kwargs["textColor"] = color
     return ParagraphStyle(base.name + "_clone", parent=base, **kwargs)
+
+
+def render_vivid_header(data: ResumeData, styles: Styles) -> list[Flowable]:
+    pd: PersonalDetails = data.personalDetails
+    accent = styles.accent
+
+    name = _e(pd.fullName or "Your Name")
+    name_style = ParagraphStyle(
+        "vivid_header_name",
+        fontName=styles.primary_heading.fontName,
+        fontSize=max(styles.primary_heading_size + 4, 24),
+        leading=max(styles.primary_heading_size + 6, 26),
+        textColor=colors.HexColor("#1a1a1a"),
+    )
+
+    left_flowables: list[Flowable] = []
+
+    show_photo = styles.customization.showPhoto and pd.photo
+    photo = _photo_flowable(pd.photo, 56) if show_photo else None
+
+    if photo:
+        left_table = Table(
+            [[photo, Paragraph(name, name_style)]],
+            colWidths=[64, None],
+            style=TableStyle([
+                ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
+                ("LEFTPADDING", (0, 0), (-1, -1), 0),
+                ("RIGHTPADDING", (0, 0), (-1, -1), 8),
+                ("TOPPADDING", (0, 0), (-1, -1), 0),
+                ("BOTTOMPADDING", (0, 0), (-1, -1), 0),
+            ])
+        )
+        left_flowables.append(left_table)
+    else:
+        left_flowables.append(Paragraph(name, name_style))
+
+    right_style = ParagraphStyle(
+        "vivid_header_right",
+        fontName=styles.body_secondary.fontName,
+        fontSize=styles.body_secondary.fontSize,
+        leading=styles.body_secondary.fontSize * 1.35,
+        textColor=colors.HexColor("#1a1a1a"),
+        alignment=TA_RIGHT,
+    )
+
+    right_lines = []
+    if pd.title:
+        right_lines.append(f"<b>{_e(pd.title)}</b>")
+    if pd.location:
+        right_lines.append(_e(pd.location))
+    if pd.email:
+        right_lines.append(f'<a href="mailto:{_e(pd.email)}"><font color="#1a1a1a"><u>{_e(pd.email)}</u></font></a>')
+    if pd.phone:
+        right_lines.append(_e(pd.phone))
+    if pd.website:
+        right_lines.append(f'<a href="{_ensure_url(pd.website)}"><font color="#1a1a1a"><u>{_e(pd.website)}</u></font></a>')
+
+    right_p = Paragraph("<br/>".join(right_lines), right_style) if right_lines else Paragraph("", right_style)
+
+    banner_table = Table(
+        [[left_flowables, right_p]],
+        colWidths=[None, None],
+        style=TableStyle([
+            ("BACKGROUND", (0, 0), (-1, -1), accent),
+            ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
+            ("LEFTPADDING", (0, 0), (-1, -1), 16),
+            ("RIGHTPADDING", (0, 0), (-1, -1), 16),
+            ("TOPPADDING", (0, 0), (-1, -1), 14),
+            ("BOTTOMPADDING", (0, 0), (-1, -1), 14),
+        ])
+    )
+
+    return [
+        banner_table,
+        Spacer(1, styles.section_gap),
+    ]
+

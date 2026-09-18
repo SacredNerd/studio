@@ -81,9 +81,10 @@ class AccomplishmentItem(_CamelModel):
 
 class ProjectItem(_CamelModel):
     name: str = ""
-    subtitle: str = ""
     description: str = ""
     technologies: str = ""
+    startDate: str = ""
+    endDate: str = ""
 
 
 class InternshipItem(_CamelModel):
@@ -224,10 +225,10 @@ class ResumeCustomization(_CamelModel):
     headerFooterSpacing: float = 0.3
     marginVertical: float = 0.5
     marginHorizontal: float = 0.5
-    betweenSections: int = 12
-    titleContentGap: int = 6
+    betweenSections: int = 14
+    titleContentGap: int = 7
     contentBlockGap: int = 10
-    contentInnerPadding: int = 2
+    contentInnerPadding: int = 3
     dateFormat: str = "Short Name (Jan YYYY)"
     headerAlignment: str = "left"
     dateAlignment: str = "right"
@@ -246,6 +247,7 @@ class ResumeCustomization(_CamelModel):
     sectionOrder: Optional[list[str]] = None
     primaryTextColor: Optional[str] = "#111827"
     secondaryTextColor: Optional[str] = "#475569"
+    textColor: Optional[str] = "#1f2937"
     backgroundColor: Optional[str] = "#ffffff"
 
 

@@ -26,10 +26,14 @@ def render(data: ResumeData, styles: Styles, *, sidebar: bool = False) -> list[F
 
     df = styles.customization.dateFormat
     out: list[Flowable] = []
-    out.extend(section_header(label_for("workHistory", styles), styles, sidebar=sidebar))
 
     for idx, item in enumerate(items):
         block: list[Flowable] = []
+        if idx == 0:
+            block.extend(section_header(label_for("workHistory", styles), styles, sidebar=sidebar))
+        else:
+            block.append(block_gap(styles))
+
         title = Paragraph(_escape(item.role or ""), styles.item_title if not sidebar else styles.sidebar_item_title)
         meta = " • ".join(p for p in (item.company, item.location) if p)
         subtitle = Paragraph(_escape(meta), styles.item_subtitle) if meta else None
@@ -47,8 +51,6 @@ def render(data: ResumeData, styles: Styles, *, sidebar: bool = False) -> list[F
                 block.append(Paragraph("• " + _escape(h), styles.bullet))
 
         out.append(keep(block))
-        if idx != len(items) - 1:
-            out.append(block_gap(styles))
 
     out.append(section_gap(styles))
     return out

@@ -61,9 +61,10 @@ export type AccomplishmentItem = {
 
 export type ProjectItem = {
   name: string;
-  subtitle: string;
   description: string;
   technologies: string;
+  startDate: string;
+  endDate: string;
 };
 
 export type InternshipItem = {
@@ -169,7 +170,10 @@ export type TemplateKey =
   | "classic"
   | "professional"
   | "specialist"
-  | "steady-form";
+  | "steady-form"
+  | "corporate"
+  | "vivid"
+  | "funky";
 export type HeaderAlignment = "left" | "center" | "right";
 export type DateAlignment = "left" | "right";
 export type LocationAlignment = "left" | "right";
@@ -233,6 +237,7 @@ export type ResumeCustomization = {
   sectionOrder?: SectionKey[];
   primaryTextColor?: string;
   secondaryTextColor?: string;
+  textColor?: string;
   backgroundColor?: string;
 };
 
@@ -273,42 +278,77 @@ export const templateCatalog: Array<{
     description: "Top-centered header, light gray background for section titles",
     tag: "New",
   },
+  {
+    key: "corporate",
+    name: "Corporate",
+    description: "Two-column layout with left border accent on section headers",
+    tag: "ATS",
+  },
+  {
+    key: "vivid",
+    name: "Vivid",
+    description: "Bold header banner with clean single-column layout",
+    tag: "New",
+  },
+  {
+    key: "funky",
+    name: "Funky",
+    description: "Cool and funky layout featuring a terracotta theme and icons",
+    tag: "New",
+  },
 ];
 
 export const colorPresets = [
-  "#263238", // Blue Gray Dark
-  "#1e3a8a", // Classic Navy
-  "#004d40", // Deep Teal
-  "#311b92", // Deep Purple
-  "#880e4f", // Burgundy
-  "#3e2723", // Dark Brown
-  "#000000", // True Black
+  "#c05a45", // Terracotta
+  "#4f46e5", // Indigo
+  "#0d9488", // Teal
+  "#8b5cf6", // Violet
+  "#e11d48", // Rose
+  "#ea580c", // Orange
+  "#16a34a", // Emerald
+  "#0891b2", // Cyan
+  "#d946ef", // Fuchsia
+  "#f59e0b", // Amber
+  "#334155", // Slate
 ];
 
 export const primaryTextColorPresets = [
+  "#0f172a", // Slate Ink
+  "#1d4ed8", // Royal Blue
+  "#0f766e", // Deep Teal
+  "#9d174d", // Wine
+  "#6d28d9", // Violet
+  "#a16207", // Bronze
   "#000000", // True Black
-  "#111827", // Jet Black
-  "#1c1917", // Dark Stone
-  "#1e293b", // Charcoal
-  "#0f172a", // Deep Slate
-  "#172554", // Very Dark Navy
 ];
 
 export const secondaryTextColorPresets = [
-  "#334155", // Slate
-  "#475569", // Slate Gray
-  "#57534e", // Warm Stone
-  "#4b5563", // Gray
-  "#52525b", // Zinc Gray
-  "#0f766e", // Dark Teal
+  "#64748b", // Cool Slate
+  "#0d9488", // Teal
+  "#d97706", // Amber
+  "#c026d3", // Fuchsia
+  "#e11d48", // Rose
+  "#2563eb", // Blue
+  "#57534e", // Warm Gray
 ];
 
 export const backgroundColorPresets = [
   "#ffffff", // Pure White
-  "#fcfcfc", // Crisp White
   "#fafaf9", // Warm Off-white
   "#f8fafc", // Cool Off-white
-  "#f3f4f6", // Light Gray
+  "#f1f5f9", // Light Slate
+  "#fef2f2", // Soft Blush
+  "#eff6ff", // Soft Sky
+];
+
+export const textColorPresets = [
+  "#1f2937", // Graphite
+  "#334155", // Slate
+  "#4b5563", // Cool Gray
+  "#525252", // Neutral Gray
+  "#3f3f46", // Zinc
+  "#1c1917", // Espresso
+  "#000000", // True Black
 ];
 export const fontOptions = ["Inter", "Calibri", "Arial", "Georgia", "Poppins"];
 
@@ -374,11 +414,12 @@ export const sampleResume: ResumeData = {
     projects: [
       {
         name: "Resume Builder UX Concept",
-        subtitle: "Case study",
         description:
           "Designed a guided resume creation flow with template switching, smart suggestions, and real-time preview updates.",
         technologies:
           "Figma, Prototyping, UX Writing, Information Architecture",
+        startDate: "2023-01",
+        endDate: "2023-06",
       },
     ],
     workHistory: [
@@ -529,16 +570,16 @@ export const sampleResume: ResumeData = {
     headerFooterSpacing: 0.3,
     marginVertical: 0.25,
     marginHorizontal: 0.5,
-    betweenSections: 12,
-    titleContentGap: 6,
+    betweenSections: 14,
+    titleContentGap: 7,
     contentBlockGap: 10,
-    contentInnerPadding: 2,
+    contentInnerPadding: 3,
     dateFormat: "Short Name (Jan YYYY)",
     headerAlignment: "left",
     dateAlignment: "right",
     locationAlignment: "right",
-    skillsLayout: "columns",
-    skillsColumns: 4,
+    skillsLayout: "inline",
+    skillsColumns: 2,
     categorizedSkillsLayout: "categories",
     categoryColumnWidth: 1.3,
     showEducationBy: "institution",
@@ -550,6 +591,7 @@ export const sampleResume: ResumeData = {
     leftColumnWidth: 43,
     primaryTextColor: "#1e293b",
     secondaryTextColor: "#64748b",
+    textColor: "#1f2937",
     backgroundColor: "#ffffff",
   },
 };

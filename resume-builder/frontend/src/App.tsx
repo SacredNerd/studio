@@ -4,7 +4,6 @@ import { RichTextEditor } from "./components/RichTextEditor";
 import {
   SectionIcon,
   ChevronDown,
-  ChevronRight,
   ArrowLeft,
   Download,
   Grip,
@@ -13,14 +12,21 @@ import {
   Edit3,
   Check,
   X,
+  RotateCcw,
+  Briefcase,
+  Building2,
+  MapPin,
 } from "./components/Icons";
 import { ResumePreview } from "./components/ResumePreview";
+import { ColorPickerButton } from "./components/ColorPicker";
 import { FORM_STEPS, StepNav } from "./components/StepNav";
+import { DateField } from "./components/DateField";
 import {
   colorPresets,
   primaryTextColorPresets,
   secondaryTextColorPresets,
   backgroundColorPresets,
+  textColorPresets,
   fontOptions,
   templateCatalog,
   type ResumeData,
@@ -38,11 +44,70 @@ import { saveAs } from 'file-saver';
 type EditorMode = "edit" | "customize";
 type CustomizeTab = "template" | "text" | "layout";
 
+/**
+ * A single labeled color row: a set of preset swatches, an optional swatch for
+ * the currently-selected custom color, plus a color-picker button ("+") that
+ * always stands out and opens an in-browser color picker popover.
+ */
+function ColorRow({
+  label,
+  presets,
+  value,
+  onChange,
+}: {
+  label: string;
+  presets: string[];
+  value?: string;
+  onChange: (color: string) => void;
+}) {
+  const isPreset = value ? presets.includes(value) : true;
+  const hasCustom = !!value && !isPreset;
+  return (
+    <div className="nb-card-flat p-3 space-y-3">
+      <p className="kicker">{label}</p>
+      <div className="flex flex-wrap items-center gap-2">
+        {presets.map((c) => (
+          <button
+            key={c}
+            type="button"
+            className={`color-swatch ${value === c ? "color-swatch-active" : ""}`}
+            style={{ background: c, border: c === "#ffffff" ? "1px solid #cbd5e1" : undefined }}
+            onClick={() => onChange(c)}
+          >
+            {value === c ? (
+              <span
+                className="block text-center text-xs"
+                style={{ color: c === "#ffffff" ? "#000" : "#fff" }}
+              >
+                ✓
+              </span>
+            ) : null}
+          </button>
+        ))}
+        {/* Swatch for the currently selected custom (non-preset) color */}
+        {hasCustom ? (
+          <button
+            type="button"
+            className="color-swatch color-swatch-active"
+            style={{ background: value }}
+            onClick={() => onChange(value!)}
+            title={value}
+          >
+            <span className="block text-center text-xs text-white">✓</span>
+          </button>
+        ) : null}
+        {/* In-browser custom color picker — always visually distinct */}
+        <ColorPickerButton value={value} onChange={onChange} isActive={false} />
+      </div>
+    </div>
+  );
+}
+
 const SECTION_LABELS: Record<SectionKey, string> = {
   headerFooter: "Header & Footer",
   personalDetails: "Personal Details",
   powerStatement: "Power Statement",
-  professionalSummary: "Professional Summary",
+  professionalSummary: "Profile",
   websites: "Websites & Social Links",
   skills: "Skills & Proficiencies",
   technicalProficiencies: "Technical Proficiencies",
@@ -59,16 +124,15 @@ const SECTION_LABELS: Record<SectionKey, string> = {
   volunteering: "Volunteering",
   languages: "Languages",
   hobbies: "Hobbies",
-  references: "References",
   awards: "Awards",
-  certifications: "Licenses & Certifications",
+  certifications: "Certifications",
   affiliations: "Affiliations",
+  references: "References",
 };
 
 const DEFAULT_ORDER: SectionKey[] = [
   "headerFooter",
   "personalDetails",
-  "powerStatement",
   "professionalSummary",
   "websites",
   "skills",
@@ -76,12 +140,10 @@ const DEFAULT_ORDER: SectionKey[] = [
   "projects",
   "workHistory",
   "achievements",
-  "accomplishments",
   "internships",
   "customSimple",
   "customAdvanced",
   "professionalTraining",
-  "additionalExperience",
   "volunteering",
   "languages",
   "hobbies",
@@ -101,7 +163,10 @@ function App() {
     const id = store.createResume();
     setActiveId(id);
   };
-  const closeEditor = () => setActiveId(null);
+  const closeEditor = () => {
+    store.flushSaves();
+    setActiveId(null);
+  };
 
   if (!activeId) {
     return (
@@ -244,9 +309,39 @@ function EditorView({
     });
   };
 
+  // Persist section order through onUpdate so it is atomic with the store save
+  // and captured by undo/redo. The sync-in effect above mirrors it back into
+  // the local drag-sort state, so we don't call setSectionOrder here directly
+  // (that would create a second, redundant undo entry).
+  const persistOrder = (next: SectionKey[]) => {
+    onUpdate((d) => ({
+      ...d,
+      customization: { ...d.customization, sectionOrder: next },
+    }));
+  };
+
   const deleteSection = (k: SectionKey) => {
-    setSectionOrder((items) => items.filter((s) => s !== k));
+    const current = resume.customization.sectionOrder ?? DEFAULT_ORDER;
+    persistOrder(current.filter((s) => s !== k));
     if (openSection === k) setOpenSection(null);
+  };
+
+  const restoreSection = (k: SectionKey) => {
+    const current = resume.customization.sectionOrder ?? DEFAULT_ORDER;
+    if (current.includes(k)) return;
+    // Re-insert at its canonical position from DEFAULT_ORDER so restored
+    // sections don't always land at the very bottom.
+    const canonicalIdx = DEFAULT_ORDER.indexOf(k);
+    const next = [...current];
+    let insertAt = next.length;
+    for (let i = 0; i < next.length; i++) {
+      if (DEFAULT_ORDER.indexOf(next[i]) > canonicalIdx) {
+        insertAt = i;
+        break;
+      }
+    }
+    next.splice(insertAt, 0, k);
+    persistOrder(next);
   };
 
   const activeTemplate = templateCatalog.find(
@@ -283,13 +378,6 @@ function EditorView({
   const completedSteps = FORM_STEPS.filter((step) => {
     return step.sections.some(hasContent);
   }).map((s) => s.id);
-
-  const goNextStep = () => {
-    if (currentStep < FORM_STEPS.length) setCurrentStep(currentStep + 1);
-  };
-  const goPrevStep = () => {
-    if (currentStep > 1) setCurrentStep(currentStep - 1);
-  };
 
   const field = (
     label: string,
@@ -602,37 +690,33 @@ function EditorView({
                   })}
                 </div>
 
-                {/* Step nav buttons */}
-                <div className="mt-4 flex items-center justify-between gap-3">
-                  <button
-                    type="button"
-                    className="nb-btn nb-btn-white gap-1"
-                    onClick={goPrevStep}
-                    disabled={currentStep === 1}
-                  >
-                    ← Previous
-                  </button>
-                  <span className="text-xs text-slate-500 font-medium">
-                    Step {currentStep} of {FORM_STEPS.length}
-                  </span>
-                  {currentStep < FORM_STEPS.length ? (
-                    <button
-                      type="button"
-                      className="nb-btn nb-btn-primary gap-1"
-                      onClick={goNextStep}
-                    >
-                      Next <ChevronRight size={14} />
-                    </button>
-                  ) : (
-                    <button
-                      type="button"
-                      className="nb-btn nb-btn-yellow gap-1"
-                      onClick={onExportDocx}
-                    >
-                      <Download size={14} /> Export
-                    </button>
-                  )}
-                </div>
+                {/* Deleted sections restore area */}
+                {(() => {
+                  const deleted = DEFAULT_ORDER.filter(
+                    (k) => !sectionOrder.includes(k)
+                  );
+                  if (deleted.length === 0) return null;
+                  return (
+                    <div className="mt-4 border-t-2 border-dashed border-slate-300 pt-3">
+                      <p className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">
+                        Deleted sections (click to restore)
+                      </p>
+                      <div className="flex flex-wrap gap-1.5">
+                        {deleted.map((key) => (
+                          <button
+                            key={key}
+                            type="button"
+                            className="nb-btn nb-btn-white py-1 px-2 text-xs gap-1"
+                            onClick={() => restoreSection(key)}
+                          >
+                            <RotateCcw size={12} />
+                            {getLabel(key)}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  );
+                })()}
 
                 {/* Reorder tip */}
                 <p className="mt-3 text-center text-xs text-slate-400">
@@ -727,11 +811,10 @@ function CustomizePanel({
 
   const deleteSection = (k: SectionKey) => {
     set((d) => {
-      const cur = d.customization.disabledSections ?? [];
-      if (cur.includes(k)) return d;
+      const cur = d.customization.sectionOrder ?? DEFAULT_ORDER;
       return {
         ...d,
-        customization: { ...d.customization, disabledSections: [...cur, k] },
+        customization: { ...d.customization, sectionOrder: cur.filter((s) => s !== k) },
       };
     });
   };
@@ -757,109 +840,65 @@ function CustomizePanel({
       <div className="flex-1 overflow-y-auto p-3 sm:p-4 space-y-4 sm:space-y-6">
         {tab === "template" && (
           <>
-            <div className="nb-card-flat p-3 space-y-3">
-              <p className="kicker">Main color</p>
-              <div className="flex flex-wrap gap-2">
-                {colorPresets.map((c) => (
-                  <button
-                    key={c}
-                    type="button"
-                    className={`color-swatch ${resume.customization.primaryColor === c ? "color-swatch-active" : ""}`}
-                    style={{ background: c }}
-                    onClick={() =>
-                      set((d) => ({
-                        ...d,
-                        customization: { ...d.customization, primaryColor: c },
-                      }))
-                    }
-                  >
-                    {resume.customization.primaryColor === c ? (
-                      <span className="block text-center text-xs text-white">
-                        ✓
-                      </span>
-                    ) : null}
-                  </button>
-                ))}
-              </div>
-            </div>
+            <ColorRow
+              label="Main color"
+              presets={colorPresets}
+              value={resume.customization.primaryColor}
+              onChange={(c) =>
+                set((d) => ({
+                  ...d,
+                  customization: { ...d.customization, primaryColor: c },
+                }))
+              }
+            />
 
-            <div className="nb-card-flat p-3 space-y-3">
-              <p className="kicker">Primary Text Color</p>
-              <div className="flex flex-wrap gap-2">
-                {primaryTextColorPresets.map((c) => (
-                  <button
-                    key={c}
-                    type="button"
-                    className={`color-swatch ${resume.customization.primaryTextColor === c ? "color-swatch-active" : ""}`}
-                    style={{ background: c }}
-                    onClick={() =>
-                      set((d) => ({
-                        ...d,
-                        customization: { ...d.customization, primaryTextColor: c },
-                      }))
-                    }
-                  >
-                    {resume.customization.primaryTextColor === c ? (
-                      <span className="block text-center text-xs text-white">
-                        ✓
-                      </span>
-                    ) : null}
-                  </button>
-                ))}
-              </div>
-            </div>
+            <ColorRow
+              label="Primary Text Color"
+              presets={primaryTextColorPresets}
+              value={resume.customization.primaryTextColor}
+              onChange={(c) =>
+                set((d) => ({
+                  ...d,
+                  customization: { ...d.customization, primaryTextColor: c },
+                }))
+              }
+            />
 
-            <div className="nb-card-flat p-3 space-y-3">
-              <p className="kicker">Secondary Text Color</p>
-              <div className="flex flex-wrap gap-2">
-                {secondaryTextColorPresets.map((c) => (
-                  <button
-                    key={c}
-                    type="button"
-                    className={`color-swatch ${resume.customization.secondaryTextColor === c ? "color-swatch-active" : ""}`}
-                    style={{ background: c }}
-                    onClick={() =>
-                      set((d) => ({
-                        ...d,
-                        customization: { ...d.customization, secondaryTextColor: c },
-                      }))
-                    }
-                  >
-                    {resume.customization.secondaryTextColor === c ? (
-                      <span className="block text-center text-xs text-white">
-                        ✓
-                      </span>
-                    ) : null}
-                  </button>
-                ))}
-              </div>
-            </div>
+            <ColorRow
+              label="Secondary Text Color"
+              presets={secondaryTextColorPresets}
+              value={resume.customization.secondaryTextColor}
+              onChange={(c) =>
+                set((d) => ({
+                  ...d,
+                  customization: { ...d.customization, secondaryTextColor: c },
+                }))
+              }
+            />
 
-            <div className="nb-card-flat p-3 space-y-3">
-              <p className="kicker">Background Color</p>
-              <div className="flex flex-wrap gap-2">
-                {backgroundColorPresets.map((c) => (
-                  <button
-                    key={c}
-                    type="button"
-                    className={`color-swatch ${resume.customization.backgroundColor === c ? "color-swatch-active" : ""}`}
-                    style={{ background: c, border: c === "#ffffff" ? "1px solid #cbd5e1" : "none" }}
-                    onClick={() =>
-                      set((d) => ({
-                        ...d,
-                        customization: { ...d.customization, backgroundColor: c },
-                      }))
-                    }
-                  >
-                    {resume.customization.backgroundColor === c ? (
-                      <span className="block text-center text-xs" style={{ color: c === "#ffffff" ? "#000" : "#fff" }}>
-                        ✓
-                      </span>
-                    ) : null}
-                  </button>
-                ))}
-              </div>
-            </div>
+            <ColorRow
+              label="Text Color"
+              presets={textColorPresets}
+              value={resume.customization.textColor}
+              onChange={(c) =>
+                set((d) => ({
+                  ...d,
+                  customization: { ...d.customization, textColor: c },
+                }))
+              }
+            />
+
+            <ColorRow
+              label="Background Color"
+              presets={backgroundColorPresets}
+              value={resume.customization.backgroundColor}
+              onChange={(c) =>
+                set((d) => ({
+                  ...d,
+                  customization: { ...d.customization, backgroundColor: c },
+                }))
+              }
+            />
 
             {/* Filter buttons removed — everything is free */}
             <div className="grid grid-cols-2 gap-3 xl:grid-cols-3">
@@ -1144,25 +1183,6 @@ function CustomizePanel({
 
         {tab === "layout" && (
           <>
-            <label className="field">
-              <span>Format</span>
-              <select
-                value={resume.customization.format}
-                onChange={(e) =>
-                  set((d) => ({
-                    ...d,
-                    customization: {
-                      ...d.customization,
-                      format: e.target
-                        .value as ResumeData["customization"]["format"],
-                    },
-                  }))
-                }
-              >
-                <option>US Letter (8.5" x 11")</option>
-                <option>A4</option>
-              </select>
-            </label>
             <div className="space-y-3">
               <p className="kicker">Margins & Spacing</p>
               <CSlider
@@ -2039,28 +2059,35 @@ function SectionEditor({
               },
             })),
           )}
-          {field("Start date", item.startDate, (v) =>
-            upd((d) => ({
-              ...d,
-              sections: {
-                ...d.sections,
-                education: d.sections.education.map((e, ci) =>
-                  ci === i ? { ...e, startDate: v } : e,
-                ),
-              },
-            })),
-          )}
-          {field("End date", item.endDate, (v) =>
-            upd((d) => ({
-              ...d,
-              sections: {
-                ...d.sections,
-                education: d.sections.education.map((e, ci) =>
-                  ci === i ? { ...e, endDate: v } : e,
-                ),
-              },
-            })),
-          )}
+          {DateField({
+            label: "Start date",
+            value: item.startDate,
+            onChange: (v) =>
+              upd((d) => ({
+                ...d,
+                sections: {
+                  ...d.sections,
+                  education: d.sections.education.map((e, ci) =>
+                    ci === i ? { ...e, startDate: v } : e,
+                  ),
+                },
+              })),
+          })}
+          {DateField({
+            label: "End date",
+            value: item.endDate,
+            onChange: (v) =>
+              upd((d) => ({
+                ...d,
+                sections: {
+                  ...d.sections,
+                  education: d.sections.education.map((e, ci) =>
+                    ci === i ? { ...e, endDate: v } : e,
+                  ),
+                },
+              })),
+            isEndDate: true,
+          })}
           <div className="sm:col-span-2">
             {field(
               "Details",
@@ -2115,61 +2142,89 @@ function SectionEditor({
       getLabel: (item, i) => item.role || item.company || `Work ${i + 1}`,
       render: (item, i) => (
         <div className="grid gap-3 sm:grid-cols-2">
-          {field("Role", item.role, (v) =>
-            upd((d) => ({
-              ...d,
-              sections: {
-                ...d.sections,
-                workHistory: d.sections.workHistory.map((e, ci) =>
-                  ci === i ? { ...e, role: v } : e,
-                ),
-              },
-            })),
-          )}
-          {field("Company", item.company, (v) =>
-            upd((d) => ({
-              ...d,
-              sections: {
-                ...d.sections,
-                workHistory: d.sections.workHistory.map((e, ci) =>
-                  ci === i ? { ...e, company: v } : e,
-                ),
-              },
-            })),
-          )}
-          {field("Location", item.location, (v) =>
-            upd((d) => ({
-              ...d,
-              sections: {
-                ...d.sections,
-                workHistory: d.sections.workHistory.map((e, ci) =>
-                  ci === i ? { ...e, location: v } : e,
-                ),
-              },
-            })),
-          )}
-          {field("Start date", item.startDate, (v) =>
-            upd((d) => ({
-              ...d,
-              sections: {
-                ...d.sections,
-                workHistory: d.sections.workHistory.map((e, ci) =>
-                  ci === i ? { ...e, startDate: v } : e,
-                ),
-              },
-            })),
-          )}
-          {field("End date", item.endDate, (v) =>
-            upd((d) => ({
-              ...d,
-              sections: {
-                ...d.sections,
-                workHistory: d.sections.workHistory.map((e, ci) =>
-                  ci === i ? { ...e, endDate: v } : e,
-                ),
-              },
-            })),
-          )}
+          <label className="field">
+            <span><Briefcase size={14} className="inline-block -mt-0.5" /> Role</span>
+            <input
+              className="nb-input"
+              value={item.role}
+              onChange={(evt) =>
+                upd((d) => ({
+                  ...d,
+                  sections: {
+                    ...d.sections,
+                    workHistory: d.sections.workHistory.map((e, ci) =>
+                      ci === i ? { ...e, role: evt.target.value } : e,
+                    ),
+                  },
+                }))
+              }
+            />
+          </label>
+          <label className="field">
+            <span><Building2 size={14} className="inline-block -mt-0.5" /> Company</span>
+            <input
+              className="nb-input"
+              value={item.company}
+              onChange={(evt) =>
+                upd((d) => ({
+                  ...d,
+                  sections: {
+                    ...d.sections,
+                    workHistory: d.sections.workHistory.map((e, ci) =>
+                      ci === i ? { ...e, company: evt.target.value } : e,
+                    ),
+                  },
+                }))
+              }
+            />
+          </label>
+          <label className="field">
+            <span><MapPin size={14} className="inline-block -mt-0.5" /> Location</span>
+            <input
+              className="nb-input"
+              value={item.location}
+              onChange={(evt) =>
+                upd((d) => ({
+                  ...d,
+                  sections: {
+                    ...d.sections,
+                    workHistory: d.sections.workHistory.map((e, ci) =>
+                      ci === i ? { ...e, location: evt.target.value } : e,
+                    ),
+                  },
+                }))
+              }
+            />
+          </label>
+          {DateField({
+            label: "Start date",
+            value: item.startDate,
+            onChange: (v) =>
+              upd((d) => ({
+                ...d,
+                sections: {
+                  ...d.sections,
+                  workHistory: d.sections.workHistory.map((e, ci) =>
+                    ci === i ? { ...e, startDate: v } : e,
+                  ),
+                },
+              })),
+          })}
+          {DateField({
+            label: "End date",
+            value: item.endDate,
+            onChange: (v) =>
+              upd((d) => ({
+                ...d,
+                sections: {
+                  ...d.sections,
+                  workHistory: d.sections.workHistory.map((e, ci) =>
+                    ci === i ? { ...e, endDate: v } : e,
+                  ),
+                },
+              })),
+            isEndDate: true,
+          })}
           <div className="sm:col-span-2">
             {field(
               "Summary",
@@ -2202,7 +2257,7 @@ function SectionEditor({
             ...d.sections,
             projects: [
               ...d.sections.projects,
-              { name: "", subtitle: "", description: "", technologies: "" },
+              { name: "", description: "", technologies: "", startDate: "", endDate: "" },
             ],
           },
         })),
@@ -2228,17 +2283,35 @@ function SectionEditor({
               },
             })),
           )}
-          {field("Subtitle", item.subtitle, (v) =>
-            upd((d) => ({
-              ...d,
-              sections: {
-                ...d.sections,
-                projects: d.sections.projects.map((e, ci) =>
-                  ci === i ? { ...e, subtitle: v } : e,
-                ),
-              },
-            })),
-          )}
+          {DateField({
+            label: "Start date",
+            value: item.startDate,
+            onChange: (v) =>
+              upd((d) => ({
+                ...d,
+                sections: {
+                  ...d.sections,
+                  projects: d.sections.projects.map((e, ci) =>
+                    ci === i ? { ...e, startDate: v } : e,
+                  ),
+                },
+              })),
+          })}
+          {DateField({
+            label: "End date",
+            value: item.endDate,
+            onChange: (v) =>
+              upd((d) => ({
+                ...d,
+                sections: {
+                  ...d.sections,
+                  projects: d.sections.projects.map((e, ci) =>
+                    ci === i ? { ...e, endDate: v } : e,
+                  ),
+                },
+              })),
+            isEndDate: true,
+          })}
           <div className="sm:col-span-2">
             {field(
               "Description",
@@ -2267,6 +2340,196 @@ function SectionEditor({
                   ),
                 },
               })),
+            )}
+          </div>
+</div>
+      ),
+    });
+
+  if (sectionKey === "languages")
+    return listEditor({
+      items: s.languages,
+      onAdd: () =>
+        upd((d) => ({
+          ...d,
+          sections: {
+            ...d.sections,
+            languages: [...d.sections.languages, { name: "", level: "" }],
+          },
+        })),
+      onRemove: (i) =>
+        upd((d) => ({
+          ...d,
+          sections: {
+            ...d.sections,
+            languages: d.sections.languages.filter((_, ci) => ci !== i),
+          },
+        })),
+      getLabel: (item, i) => item.name || `Language ${i + 1}`,
+      render: (item, i) => (
+        <div className="grid gap-3 sm:grid-cols-2">
+          {field("Language", item.name, (v) =>
+            upd((d) => ({
+              ...d,
+              sections: {
+                ...d.sections,
+                languages: d.sections.languages.map((e, ci) =>
+                  ci === i ? { ...e, name: v } : e,
+                ),
+              },
+            })),
+          )}
+          <label className="field">
+            <span>Proficiency</span>
+            <select
+              value={item.level}
+              onChange={(e) =>
+                upd((d) => ({
+                  ...d,
+                  sections: {
+                    ...d.sections,
+                    languages: d.sections.languages.map((l, ci) =>
+                      ci === i ? { ...l, level: e.target.value } : l,
+                    ),
+                  },
+                }))
+              }
+              className="nb-input"
+            >
+              <option value="">Select level</option>
+              <option value="Elementary">Elementary</option>
+              <option value="Limited working">Limited working</option>
+              <option value="Professional working">Professional working</option>
+              <option value="Full professional">Full professional</option>
+              <option value="Native/Bilingual">Native/Bilingual</option>
+            </select>
+          </label>
+        </div>
+      ),
+    });
+
+  if (sectionKey === "hobbies")
+    return (
+      <div className="space-y-3">
+        <p className="text-sm text-slate-600">
+          Enter hobbies separated by commas (e.g., Illustration, Cycling, Travel)
+        </p>
+        <label className="field">
+          <span>Hobbies</span>
+          <input
+            type="text"
+            value={s.hobbies.map((h) => h.name).join(", ")}
+            onChange={(e) =>
+              upd((d) => ({
+                ...d,
+                sections: {
+                  ...d.sections,
+                  hobbies: e.target.value
+                    .split(",")
+                    .map((t) => t.trim())
+                    .filter(Boolean)
+                    .map((name) => ({ name })),
+                },
+              }))
+            }
+            placeholder="Illustration, Cycling, Travel"
+            className="nb-input"
+          />
+        </label>
+      </div>
+    );
+
+  if (sectionKey === "internships")
+    return listEditor({
+      items: s.internships,
+      onAdd: () =>
+        upd((d) => ({
+          ...d,
+          sections: {
+            ...d.sections,
+            internships: [
+              ...d.sections.internships,
+              { company: "", role: "", startDate: "", endDate: "", description: "" },
+            ],
+          },
+        })),
+      onRemove: (i) =>
+        upd((d) => ({
+          ...d,
+          sections: {
+            ...d.sections,
+            internships: d.sections.internships.filter((_, ci) => ci !== i),
+          },
+        })),
+      getLabel: (item, i) => item.role || item.company || `Internship ${i + 1}`,
+      render: (item, i) => (
+        <div className="grid gap-3 sm:grid-cols-2">
+          {field("Role", item.role, (v) =>
+            upd((d) => ({
+              ...d,
+              sections: {
+                ...d.sections,
+                internships: d.sections.internships.map((e, ci) =>
+                  ci === i ? { ...e, role: v } : e,
+                ),
+              },
+            })),
+          )}
+          {field("Company", item.company, (v) =>
+            upd((d) => ({
+              ...d,
+              sections: {
+                ...d.sections,
+                internships: d.sections.internships.map((e, ci) =>
+                  ci === i ? { ...e, company: v } : e,
+                ),
+              },
+            })),
+          )}
+          {DateField({
+            label: "Start date",
+            value: item.startDate,
+            onChange: (v) =>
+              upd((d) => ({
+                ...d,
+                sections: {
+                  ...d.sections,
+                  internships: d.sections.internships.map((e, ci) =>
+                    ci === i ? { ...e, startDate: v } : e,
+                  ),
+                },
+              })),
+          })}
+          {DateField({
+            label: "End date",
+            value: item.endDate,
+            onChange: (v) =>
+              upd((d) => ({
+                ...d,
+                sections: {
+                  ...d.sections,
+                  internships: d.sections.internships.map((e, ci) =>
+                    ci === i ? { ...e, endDate: v } : e,
+                  ),
+                },
+              })),
+            isEndDate: true,
+          })}
+          <div className="sm:col-span-2">
+            {field(
+              "Description",
+              item.description,
+              (v) =>
+                upd((d) => ({
+                  ...d,
+                  sections: {
+                    ...d.sections,
+                    internships: d.sections.internships.map((e, ci) =>
+                      ci === i ? { ...e, description: v } : e,
+                    ),
+                  },
+                })),
+              { rich: true, rows: 2 },
             )}
           </div>
         </div>

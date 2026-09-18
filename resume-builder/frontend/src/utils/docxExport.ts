@@ -320,13 +320,20 @@ export async function exportToDocx(resume: ResumeData): Promise<void> {
   if (sections.projects?.length > 0) {
     children.push(sectionHeading("Projects", font));
     sections.projects.forEach((proj, idx) => {
-      const nameSubtitle = [proj.name, proj.subtitle]
-        .filter(Boolean)
-        .join(" \u2014 ");
       children.push(
         new Paragraph({
           children: [
-            new TextRun({ text: nameSubtitle, bold: true, size: 24, font }),
+            new TextRun({ text: proj.name, bold: true, size: 24, font }),
+            ...(proj.startDate || proj.endDate
+              ? [
+                  new TextRun({
+                    text: `  (${[proj.startDate, proj.endDate].filter(Boolean).join(" – ")})`,
+                    size: 20,
+                    font,
+                    color: "666666",
+                  }),
+                ]
+              : []),
           ],
           spacing: { before: idx > 0 ? 140 : 0, after: 40 },
         }),

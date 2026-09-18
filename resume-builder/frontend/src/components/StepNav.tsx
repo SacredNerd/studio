@@ -9,10 +9,10 @@ export type FormStep = {
 }
 
 export const FORM_STEPS: FormStep[] = [
-  { id: 1, label: 'Header & Profile', icon: '◉', sections: ['headerFooter', 'personalDetails', 'powerStatement', 'professionalSummary', 'websites'] },
-  { id: 2, label: 'Experience',       icon: '◆', sections: ['workHistory', 'achievements', 'accomplishments', 'internships', 'projects', 'additionalExperience'] },
-  { id: 3, label: 'Skills & Education', icon: '◈', sections: ['skills', 'education', 'certifications', 'awards', 'affiliations', 'professionalTraining'] },
-  { id: 4, label: 'Extras & Custom',  icon: '⊕', sections: ['volunteering', 'languages', 'hobbies', 'references', 'customSimple', 'customAdvanced'] },
+  { id: 1, label: 'Profile', icon: '◉', sections: ['headerFooter', 'personalDetails', 'professionalSummary', 'websites'] },
+  { id: 2, label: 'Experience',       icon: '◆', sections: ['workHistory', 'achievements', 'internships', 'projects'] },
+  { id: 3, label: 'Skills & Education', icon: '◈', sections: ['skills', 'education', 'certifications', 'affiliations', 'professionalTraining'] },
+  { id: 4, label: 'Extras & Custom',  icon: '⊕', sections: ['volunteering', 'languages', 'hobbies', 'references', 'awards', 'customSimple', 'customAdvanced'] },
 ]
 
 type StepNavProps = {

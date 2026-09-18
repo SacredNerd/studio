@@ -27,17 +27,18 @@ def _render(key: str, items: list[tuple[str, str]], styles: Styles, sidebar: boo
     if not items:
         return []
     out: list[Flowable] = []
-    out.extend(section_header(label_for(key, styles), styles, sidebar=sidebar))
     for idx, (title, desc) in enumerate(items):
         block: list[Flowable] = []
+        if idx == 0:
+            block.extend(section_header(label_for(key, styles), styles, sidebar=sidebar))
+        else:
+            block.append(block_gap(styles))
         if title:
             block.append(
                 Paragraph(_e(title), styles.item_title if not sidebar else styles.sidebar_item_title)
             )
         block.extend(rich(desc, styles, sidebar=sidebar))
         out.append(keep(block))
-        if idx != len(items) - 1:
-            out.append(block_gap(styles))
     out.append(section_gap(styles))
     return out
 

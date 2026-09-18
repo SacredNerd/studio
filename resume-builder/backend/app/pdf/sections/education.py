@@ -34,13 +34,17 @@ def render(data: ResumeData, styles: Styles, *, sidebar: bool = False) -> list[F
     inline = styles.customization.educationLayout == "inline"
 
     out: list[Flowable] = []
-    out.extend(section_header(label_for("education", styles), styles, sidebar=sidebar))
 
     for idx, item in enumerate(items):
         primary = item.institution if by == "institution" else item.degree
         secondary = item.degree if by == "institution" else item.institution
 
         block: list[Flowable] = []
+        if idx == 0:
+            block.extend(section_header(label_for("education", styles), styles, sidebar=sidebar))
+        else:
+            block.append(block_gap(styles))
+
         date = date_range(item.startDate, item.endDate, df)
 
         if inline:
@@ -64,8 +68,6 @@ def render(data: ResumeData, styles: Styles, *, sidebar: bool = False) -> list[F
 
         block.extend(rich(item.details, styles, sidebar=sidebar))
         out.append(keep(block))
-        if idx != len(items) - 1:
-            out.append(block_gap(styles))
 
     out.append(section_gap(styles))
     return out

@@ -44,6 +44,8 @@ export function useResumeStore() {
 
   // Per-resume debounced PUT timers
   const saveTimers = useRef<Map<string, ReturnType<typeof setTimeout>>>(new Map())
+  // Latest un-persisted payload per resume (for flushSaves).
+  const pendingData = useRef<Map<string, ResumeData>>(new Map())
 
   // Initial load — pull summaries, then hydrate each resume.
   useEffect(() => {
@@ -72,9 +74,33 @@ export function useResumeStore() {
     const newT = setTimeout(() => {
       api.updateResume(id, { data }).catch((e) => console.error('Save failed:', e))
       saveTimers.current.delete(id)
+      pendingData.current.delete(id)
     }, SAVE_DEBOUNCE_MS)
     saveTimers.current.set(id, newT)
+    // Remember the latest payload so flush() can persist it immediately.
+    pendingData.current.set(id, data)
   }
+
+  /** Immediately persist any pending debounced saves (e.g. before navigating
+   *  away or closing the tab) so no edits are lost to the debounce window. */
+  function flushSaves() {
+    for (const [id, t] of saveTimers.current) {
+      clearTimeout(t)
+      const data = pendingData.current.get(id)
+      if (data && !id.startsWith('tmp_')) {
+        api.updateResume(id, { data }).catch((e) => console.error('Flush save failed:', e))
+      }
+    }
+    saveTimers.current.clear()
+    pendingData.current.clear()
+  }
+
+  // Flush pending saves if the tab is closed/refreshed mid-debounce.
+  useEffect(() => {
+    const handler = () => flushSaves()
+    window.addEventListener('beforeunload', handler)
+    return () => window.removeEventListener('beforeunload', handler)
+  }, [])
 
   function createResume(): string {
     // Synchronously assign a temporary id and patch it once the real id
@@ -195,5 +221,6 @@ export function useResumeStore() {
     deleteResume,
     duplicateResume,
     getResume,
+    flushSaves,
   }
 }

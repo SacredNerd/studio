@@ -50,9 +50,10 @@ SAMPLE = {
         "projects": [
             {
                 "name": "Resume Builder UX Concept",
-                "subtitle": "Case study",
                 "description": "<p>Designed a guided resume creation flow.</p>",
                 "technologies": "Figma, Prototyping",
+                "startDate": "2023-01",
+                "endDate": "2023-06",
             }
         ],
         "workHistory": [

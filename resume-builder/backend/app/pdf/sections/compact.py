@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import html as _html
 
-from reportlab.platypus import Flowable, Paragraph
+from reportlab.platypus import Flowable, KeepTogether, Paragraph
 
 from app.models.resume import ResumeData
 from app.pdf.sections._common import label_for, section_gap, section_header
@@ -19,16 +19,18 @@ def render_languages(data: ResumeData, styles: Styles, *, sidebar: bool = False)
     items = [l for l in data.sections.languages if l.name]
     if not items:
         return []
-    body = styles.sidebar_body if sidebar else styles.body
+    body = styles.sidebar_body if sidebar else styles.body_muted
     out: list[Flowable] = []
-    out.extend(section_header(label_for("languages", styles), styles, sidebar=sidebar))
+    block: list[Flowable] = []
+    block.extend(section_header(label_for("languages", styles), styles, sidebar=sidebar))
     parts = []
     for l in items:
         if l.level:
             parts.append(f"<b>{_e(l.name)}</b> — {_e(l.level)}")
         else:
             parts.append(f"<b>{_e(l.name)}</b>")
-    out.append(Paragraph("  •  ".join(parts), body))
+    block.append(Paragraph("  •  ".join(parts), body))
+    out.append(KeepTogether(block))
     out.append(section_gap(styles))
     return out
 
@@ -38,9 +40,11 @@ def render_hobbies(data: ResumeData, styles: Styles, *, sidebar: bool = False) -
     if not names:
         return []
     out: list[Flowable] = []
-    out.extend(section_header(label_for("hobbies", styles), styles, sidebar=sidebar))
-    body = styles.sidebar_body if sidebar else styles.body
-    out.append(Paragraph(" • ".join(_e(n) for n in names), body))
+    block: list[Flowable] = []
+    block.extend(section_header(label_for("hobbies", styles), styles, sidebar=sidebar))
+    body = styles.sidebar_body if sidebar else styles.body_muted
+    block.append(Paragraph(" • ".join(_e(n) for n in names), body))
+    out.append(KeepTogether(block))
     out.append(section_gap(styles))
     return out
 
@@ -50,14 +54,16 @@ def render_references(data: ResumeData, styles: Styles, *, sidebar: bool = False
     if not refs:
         return []
     out: list[Flowable] = []
-    out.extend(section_header(label_for("references", styles), styles, sidebar=sidebar))
+    block: list[Flowable] = []
+    block.extend(section_header(label_for("references", styles), styles, sidebar=sidebar))
     title_style = styles.item_title if not sidebar else styles.sidebar_item_title
     body_secondary = styles.body_secondary if not sidebar else styles.sidebar_body
     for r in refs:
-        out.append(Paragraph(_e(r.name), title_style))
+        block.append(Paragraph(_e(r.name), title_style))
         sub = " · ".join(p for p in (r.title, r.contact) if p)
         if sub:
-            out.append(Paragraph(_e(sub), body_secondary))
+            block.append(Paragraph(_e(sub), body_secondary))
+    out.append(KeepTogether(block))
     out.append(section_gap(styles))
     return out
 
@@ -67,18 +73,20 @@ def render_websites(data: ResumeData, styles: Styles, *, sidebar: bool = False) 
     if not links:
         return []
     out: list[Flowable] = []
-    out.extend(section_header(label_for("websites", styles), styles, sidebar=sidebar))
+    block: list[Flowable] = []
+    block.extend(section_header(label_for("websites", styles), styles, sidebar=sidebar))
     body = styles.sidebar_body if sidebar else styles.body
     for l in links:
         label = l.label or l.value
         href = l.value or l.label
         if href and not href.startswith(("http://", "https://", "mailto:")):
             href = ("mailto:" + href) if "@" in href else ("https://" + href)
-        out.append(
+        block.append(
             Paragraph(
                 f'<a href="{_e(href)}"><font color="#1d4ed8"><u>{_e(label)}</u></font></a>',
                 body,
             )
         )
+    out.append(KeepTogether(block))
     out.append(section_gap(styles))
     return out

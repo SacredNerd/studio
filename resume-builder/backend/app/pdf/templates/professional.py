@@ -16,7 +16,7 @@ from app.models.resume import ResumeData
 from app.pdf.sections.headerfooter import render_sidebar_identity
 from app.pdf.styles import Styles
 from app.pdf.templates._columns import split_order
-from app.pdf.templates._dispatch import render_section
+from app.pdf.templates._dispatch import render_section, shown
 
 
 def render(data: ResumeData, styles: Styles, stream: IO[bytes]) -> None:
@@ -97,7 +97,7 @@ def render(data: ResumeData, styles: Styles, stream: IO[bytes]) -> None:
     for key in right_keys:
         story.extend(render_section(key, data, styles, sidebar=False))
 
-    if data.headerFooter.footerText:
+    if shown(data, "headerFooter") and data.headerFooter.footerText:
         from app.pdf.sections.headerfooter import render_footer_text
 
         story.extend(render_footer_text(data.headerFooter.footerText, styles))

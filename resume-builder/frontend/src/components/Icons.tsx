@@ -318,6 +318,13 @@ export const X = mk(
   </>,
 );
 
+export const RotateCcw = mk(
+  <>
+    <path d="M1 4v6h6" />
+    <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10" />
+  </>,
+);
+
 export const Printer = mk(
   <>
     <polyline points="6 9 6 2 18 2 18 9" />

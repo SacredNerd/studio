@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import html as _html
 
-from reportlab.platypus import Flowable, Paragraph, Table, TableStyle
+from reportlab.platypus import Flowable, KeepTogether, Paragraph, Table, TableStyle
 
 from app.models.resume import ResumeData
 from app.pdf.sections._common import label_for, section_gap, section_header
@@ -23,11 +23,10 @@ def _render_groups(
 ) -> list[Flowable]:
     layout = styles.customization.skillsLayout
     cols = max(1, int(styles.customization.skillsColumns or 1))
-    body = styles.sidebar_body if sidebar else styles.body
+    body = styles.sidebar_body if sidebar else styles.body_muted
     title_style = styles.item_title if not sidebar else styles.sidebar_item_title
 
     if layout == "inline" or len(groups) <= 1:
-        # One per row
         out: list[Flowable] = []
         for title, items in groups:
             if title:
@@ -37,7 +36,6 @@ def _render_groups(
                 out.append(Paragraph(joined, body))
         return out
 
-    # Columns: lay out as a Table of cells, cols-wide.
     cells = []
     for title, items in groups:
         joined = " • ".join(_e(x) for x in items if x)
@@ -75,8 +73,10 @@ def render_skills(data: ResumeData, styles: Styles, *, sidebar: bool = False) ->
     if not groups:
         return []
     out: list[Flowable] = []
-    out.extend(section_header(label_for("skills", styles), styles, sidebar=sidebar))
-    out.extend(_render_groups(groups, styles, sidebar=sidebar))
+    block: list[Flowable] = []
+    block.extend(section_header(label_for("skills", styles), styles, sidebar=sidebar))
+    block.extend(_render_groups(groups, styles, sidebar=sidebar))
+    out.append(KeepTogether(block))
     out.append(section_gap(styles))
     return out
 
@@ -86,7 +86,9 @@ def render_technical(data: ResumeData, styles: Styles, *, sidebar: bool = False)
     if not groups:
         return []
     out: list[Flowable] = []
-    out.extend(section_header(label_for("technicalProficiencies", styles), styles, sidebar=sidebar))
-    out.extend(_render_groups(groups, styles, sidebar=sidebar))
+    block: list[Flowable] = []
+    block.extend(section_header(label_for("technicalProficiencies", styles), styles, sidebar=sidebar))
+    block.extend(_render_groups(groups, styles, sidebar=sidebar))
+    out.append(KeepTogether(block))
     out.append(section_gap(styles))
     return out

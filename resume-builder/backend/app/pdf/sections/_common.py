@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from reportlab.lib import colors
+from reportlab.lib.styles import ParagraphStyle
 from reportlab.platypus import (
     Flowable,
     HRFlowable,
@@ -75,6 +76,92 @@ def section_header(label: str, styles: Styles, *, sidebar: bool = False) -> list
                 ]),
             ),
             Spacer(1, styles.title_content_gap),
+        ]
+
+    if template == "vivid" and not sidebar:
+        badge_style = ParagraphStyle(
+            "vivid_badge",
+            fontName=styles.section_title.fontName,
+            fontSize=styles.section_title.fontSize,
+            leading=styles.section_title.leading,
+            textColor=colors.white,
+        )
+        p = Paragraph(text, badge_style)
+        return [
+            Table(
+                [[p]],
+                style=TableStyle([
+                    ("BACKGROUND", (0, 0), (-1, -1), colors.HexColor("#1a1a1a")),
+                    ("LEFTPADDING", (0, 0), (-1, -1), 8),
+                    ("RIGHTPADDING", (0, 0), (-1, -1), 8),
+                    ("TOPPADDING", (0, 0), (-1, -1), 3),
+                    ("BOTTOMPADDING", (0, 0), (-1, -1), 3),
+                ]),
+                hAlign="LEFT",
+            ),
+            Spacer(1, styles.title_content_gap),
+        ]
+
+    if template == "funky" and not sidebar:
+        from app.pdf.icons import create_icon
+        
+        section_key = ""
+        if styles.customization.sectionLabels:
+            for k, v in styles.customization.sectionLabels.items():
+                if v == label:
+                    section_key = k
+                    break
+        if not section_key:
+            for k, v in DEFAULT_LABELS.items():
+                if v == label:
+                    section_key = k
+                    break
+                    
+        icon_map = {
+            "powerStatement": "zap",
+            "professionalSummary": "user",
+            "workHistory": "briefcase",
+            "education": "graduationcap",
+            "projects": "folder",
+            "skills": "star",
+            "technicalProficiencies": "star",
+            "certifications": "award",
+            "awards": "award",
+            "achievements": "award",
+            "languages": "globe",
+            "hobbies": "palette",
+            "references": "users",
+            "websites": "link",
+            "professionalTraining": "book",
+            "volunteering": "heart",
+            "additionalExperience": "pluscircle"
+        }
+        icon_name = icon_map.get(section_key, "list")
+        
+        icon_size = style.fontSize + 2
+        drawing = create_icon(icon_name, styles.accent, size=icon_size)
+        
+        p = Paragraph(text, style)
+        return [
+            Table(
+                [[drawing, p]],
+                colWidths=[icon_size + 8, None],
+                style=TableStyle([
+                    ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
+                    ("LEFTPADDING", (0, 0), (-1, -1), 0),
+                    ("RIGHTPADDING", (0, 0), (-1, -1), 0),
+                    ("TOPPADDING", (0, 0), (-1, -1), 0),
+                    ("BOTTOMPADDING", (0, 0), (-1, -1), 0),
+                ]),
+                hAlign="LEFT",
+            ),
+            HRFlowable(
+                width="100%",
+                thickness=1,
+                color=styles.accent,
+                spaceBefore=1,
+                spaceAfter=styles.title_content_gap,
+            ),
         ]
 
     rule_color = colors.white if sidebar else styles.accent
